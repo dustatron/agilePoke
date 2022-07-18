@@ -1,3 +1,4 @@
+import PokerBoard from "../../components/PokerBoard"
 import React from "react"
 import { useRouter } from "next/router"
 type Props = {
@@ -7,7 +8,11 @@ type Props = {
 const Poker = () => {
   const router = useRouter()
   const { query } = router
-  return <div>Poker {query.id}</div>
+  return (
+    <div>
+      <PokerBoard roomName={query.id as string} />
+    </div>
+  )
 }
 
 export default Poker
