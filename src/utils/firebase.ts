@@ -1,8 +1,6 @@
 import { getApp as _getApp, getApps, initializeApp } from "firebase/app"
-import {
-  getFirestore as _getFirestore,
-  enableIndexedDbPersistence,
-} from "firebase/firestore"
+
+import { getFirestore as _getFirestore } from "firebase/firestore"
 
 const config = {
   apiKey: "AIzaSyDWl4luXyraFeVBxBM7AeiZXCKJRUWCdts",
@@ -27,9 +25,6 @@ export function getFirestore() {
   if (!isRunning) getApp()
 
   const db = _getFirestore()
-
-  if (!isRunning)
-    if (typeof window !== undefined) enableIndexedDbPersistence(db)
 
   return db
 }
