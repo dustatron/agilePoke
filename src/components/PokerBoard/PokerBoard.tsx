@@ -14,6 +14,7 @@ import BasicForm from "../BasicForm"
 import Card from "../Card"
 import User from "../User"
 import { getFirestore } from "../../utils/firebase"
+import { useUpdateDoc } from "../../hooks"
 import { v4 } from "uuid"
 
 type Props = {
@@ -26,9 +27,11 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
 
   const firebaseApp = getFirestore()
   const thisDocRef = doc(firebaseApp, "rooms", roomId)
+  const updateRoomData = useUpdateDoc(thisDocRef)
 
   const options = [1, 2, 3, 5, 8, 13, 21, 34]
   const isBrowser = typeof window !== "undefined"
+
   const handleAddUser = async (currentUser: string) => {
     const newUser: UserData = {
       name: currentUser,
@@ -39,13 +42,9 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     if (isBrowser) {
       window.localStorage.setItem("agile-poker", JSON.stringify(newUser))
     }
-    try {
-      await updateDoc(thisDocRef, {
-        users: [...roomData.users, newUser],
-      })
-    } catch (e) {
-      console.error("Error adding document: ", e)
-    }
+    updateRoomData({
+      users: [...roomData.users, newUser],
+    })
   }
 
   const handleSelection = async (vote: number) => {
@@ -57,49 +56,37 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
       (user: UserData) => user.id === updateUserData.id
     )
     newUserData[currentUserIndex].vote = vote
-    console.log(newUserData)
 
-    try {
-      await updateDoc(thisDocRef, {
-        users: newUserData,
-      })
-    } catch (e) {
-      console.error("Error adding document: ", e)
-    }
+    updateRoomData({
+      users: newUserData,
+    })
   }
 
-  const handleReset = async () => {
-    try {
-      await updateDoc(thisDocRef, {
-        isVoting: true,
-        users: roomData.users.map((user) => ({ ...user, vote: 0 })),
-      })
-    } catch (e) {
-      console.error("Error adding document: ", e)
+  const handleReset = () => {
+    const data = {
+      isVoting: true,
+      users: roomData.users.map((user) => ({ ...user, vote: 0 })),
     }
+    updateRoomData(data)
   }
 
-  const handleShow = async () => {
-    await updateDoc(thisDocRef, {
+  const handleShow = () => {
+    updateRoomData({
       isVoting: !roomData.isVoting,
     })
   }
 
-  const updateUserList = async () => {
-    if (currentUser) {
-      try {
-        console.log("currentUser", currentUser)
-
-        await updateDoc(thisDocRef, {
-          users: [...roomData.users, currentUser],
-        })
-      } catch (e) {
-        console.error("Error adding document: ", e)
-      }
-    }
+  const updateUserList = async (user: UserData) => {
+    updateRoomData({
+      users: [...roomData.users, user],
+    })
   }
 
-  const memoUpdateUserList = useCallback(() => updateUserList(), [currentUser])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoUpdateUserList = useCallback(
+    (user: UserData) => updateUserList(user),
+    [currentUser]
+  )
 
   useEffect(() => {
     if (isBrowser) {
@@ -113,11 +100,10 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     const isUserInRoomData = !!roomData.users.find(
       (user) => user?.id === currentUser?.id
     )
-    console.log("isUserInRoomData", isUserInRoomData)
-    if (!isUserInRoomData) {
-      console.log("settin")
-      memoUpdateUserList()
+    if (!isUserInRoomData && currentUser) {
+      memoUpdateUserList(currentUser)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser])
 
   return (
