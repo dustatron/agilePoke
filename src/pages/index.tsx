@@ -1,16 +1,29 @@
 import { Container, Heading } from "@chakra-ui/react"
+import { addDoc, collection } from "firebase/firestore"
 
 import BasicForm from "../components/BasicForm"
 import Head from "next/head"
 import type { NextPage } from "next"
+import { Room } from "../utils/types"
+import { getFirestore } from "../utils/firebase"
 import { useRouter } from "next/router"
 
 const Home: NextPage = () => {
   const router = useRouter()
+  const firestore = getFirestore()
 
-  const handleSubmit = (roomName: string) => {
-    const roomNameCleaned = roomName.replace(/ /g, "").toLowerCase()
-    router.push(`/poker/${roomNameCleaned}`)
+  const handleSubmit = async (roomName: string) => {
+    const newRoom: Room = {
+      name: roomName,
+      isVoting: true,
+      users: [],
+    }
+    try {
+      const docRef = await addDoc(collection(firestore, "rooms"), newRoom)
+      router.push(`/poker/${docRef.id}`)
+    } catch (e) {
+      console.error("Error adding document: ", e)
+    }
   }
 
   return (

@@ -3,68 +3,127 @@ import {
   Button,
   Center,
   Container,
-  Flex,
   HStack,
   Heading,
-  Select,
 } from "@chakra-ui/react"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
+import { Room, UserData } from "../../utils/types"
+import { doc, updateDoc } from "firebase/firestore"
 
 import BasicForm from "../BasicForm"
 import Card from "../Card"
 import User from "../User"
+import { getFirestore } from "../../utils/firebase"
+import { v4 } from "uuid"
 
-type User = {
-  name: string
-  vote: number | null
-  id: string
-}
 type Props = {
-  roomName?: string
+  roomData: Room
+  roomId: string
 }
 
-const userListTemp: User[] = [
-  { name: "Jerry", vote: 2, id: "123" },
-  { name: "Jan", vote: 3, id: "345" },
-]
+const PokerBoard = ({ roomData, roomId }: Props) => {
+  const [currentUser, setCurrentUser] = useState<UserData>()
 
-const PokerBoard = ({ roomName }: Props) => {
-  const [userList, setUserList] = useState<User[]>(userListTemp)
-  const [userName, setUserName] = useState("")
-  const [isShowingForm, setIsShowingForm] = useState(true)
-  const [isVoting, setVoting] = useState(true)
+  const firebaseApp = getFirestore()
+  const thisDocRef = doc(firebaseApp, "rooms", roomId)
 
   const options = [1, 2, 3, 5, 8, 13, 21, 34]
-
-  const handleAddUser = (userName: string) => {
-    setUserName(userName)
-    const newUserList = [
-      ...userList,
-      { name: userName, vote: null, id: userName },
-    ]
-    setUserList(newUserList)
+  const isBrowser = typeof window !== "undefined"
+  const handleAddUser = async (currentUser: string) => {
+    const newUser: UserData = {
+      name: currentUser,
+      vote: 0,
+      id: v4(),
+    }
+    setCurrentUser(newUser)
+    if (isBrowser) {
+      window.localStorage.setItem("agile-poker", JSON.stringify(newUser))
+    }
+    try {
+      await updateDoc(thisDocRef, {
+        users: [...roomData.users, newUser],
+      })
+    } catch (e) {
+      console.error("Error adding document: ", e)
+    }
   }
 
-  const handleSelection = (num: number) => {
-    setVoting(false)
-    const indexOfUser = userList.findIndex((user) => user.id === userName)
-    const newUserList = [...userList]
-    newUserList[indexOfUser] = { name: userName, vote: num, id: userName }
-    setUserList(newUserList)
+  const handleSelection = async (vote: number) => {
+    const updateUserData: UserData = { ...currentUser!, vote }
+    setCurrentUser(updateUserData)
+
+    const newUserData = [...roomData.users]
+    const currentUserIndex = newUserData.findIndex(
+      (user: UserData) => user.id === updateUserData.id
+    )
+    newUserData[currentUserIndex].vote = vote
+    console.log(newUserData)
+
+    try {
+      await updateDoc(thisDocRef, {
+        users: newUserData,
+      })
+    } catch (e) {
+      console.error("Error adding document: ", e)
+    }
   }
 
-  const handleReset = () => {
-    setVoting(true)
+  const handleReset = async () => {
+    try {
+      await updateDoc(thisDocRef, {
+        isVoting: true,
+        users: roomData.users.map((user) => ({ ...user, vote: 0 })),
+      })
+    } catch (e) {
+      console.error("Error adding document: ", e)
+    }
   }
+
+  const handleShow = async () => {
+    await updateDoc(thisDocRef, {
+      isVoting: !roomData.isVoting,
+    })
+  }
+
+  const updateUserList = async () => {
+    if (currentUser) {
+      try {
+        console.log("currentUser", currentUser)
+
+        await updateDoc(thisDocRef, {
+          users: [...roomData.users, currentUser],
+        })
+      } catch (e) {
+        console.error("Error adding document: ", e)
+      }
+    }
+  }
+
+  const memoUpdateUserList = useCallback(() => updateUserList(), [currentUser])
 
   useEffect(() => {
-    if (!!userName) {
-      setIsShowingForm(false)
+    if (isBrowser) {
+      const fromLocalStorage = window.localStorage.getItem("agile-poker")
+      setCurrentUser(fromLocalStorage && JSON.parse(fromLocalStorage))
     }
-  }, [userName])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const isUserInRoomData = !!roomData.users.find(
+      (user) => user?.id === currentUser?.id
+    )
+    console.log("isUserInRoomData", isUserInRoomData)
+    if (!isUserInRoomData) {
+      console.log("settin")
+      memoUpdateUserList()
+    }
+  }, [currentUser])
+
   return (
     <Container size="lg" maxW="4xl">
-      {isShowingForm && (
+      <Heading textAlign="center">Room : {roomData.name}</Heading>
+      {!currentUser && (
         <BasicForm
           title="Enter Name"
           placeholder="Name"
@@ -72,31 +131,31 @@ const PokerBoard = ({ roomName }: Props) => {
           onSubmit={(name: string) => handleAddUser(name)}
         />
       )}
-      {userName && (
+      {currentUser && (
         <>
           <Box h="60vh" w="100%">
-            <Heading textAlign="center">
-              Room : {roomName?.toUpperCase()}
-            </Heading>
             <Center h="10" paddingTop={4}>
+              <Button onClick={handleShow}>
+                {roomData.isVoting ? "Show" : "Hide"}
+              </Button>
               <Button
                 colorScheme="blue"
                 onClick={handleReset}
-                isDisabled={isVoting}
+                isDisabled={roomData.isVoting}
               >
                 Reset Vote
               </Button>
             </Center>
             <HStack spacing="10px" justify="center" paddingTop={4}>
-              {userList &&
-                userList.map((user) => (
-                  <User
-                    key={user.id}
-                    isVoting={isVoting}
-                    name={user.name}
-                    vote={user.vote}
-                  />
-                ))}
+              {roomData.users.map((user) => (
+                <User
+                  key={user?.id}
+                  isVoting={roomData.isVoting}
+                  name={user?.name}
+                  vote={user?.vote}
+                  isCurrentUser={user?.id === currentUser.id}
+                />
+              ))}
             </HStack>
           </Box>
           <HStack spacing="5px" justify="center">
@@ -104,7 +163,7 @@ const PokerBoard = ({ roomName }: Props) => {
               <Card
                 key={num}
                 number={num}
-                isVoting={isVoting}
+                isVoting={roomData.isVoting}
                 select={handleSelection}
               />
             ))}
