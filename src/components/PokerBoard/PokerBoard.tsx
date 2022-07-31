@@ -34,7 +34,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
   const options = [1, 2, 3, 5, 8, 13, 21, 34]
   const isBrowser = typeof window !== "undefined"
 
-  const handleAddUser = async (currentUser: string) => {
+  const handleAddUser = (currentUser: string) => {
     const newUser: UserData = {
       name: currentUser,
       vote: 0,
@@ -49,7 +49,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     })
   }
 
-  const handleSelection = async (vote: number) => {
+  const handleSelection = (vote: number) => {
     const updateUserData: UserData = { ...currentUser!, vote }
     setCurrentUser(updateUserData)
 

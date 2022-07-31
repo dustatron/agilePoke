@@ -8,7 +8,7 @@ import { useRouter } from "next/router"
 const Home: NextPage = () => {
   const router = useRouter()
 
-  const handleSubmit = async (roomName: string) => {
+  const handleSubmit = (roomName: string) => {
     router.push(`/${roomName.toLowerCase()}`)
   }
 
