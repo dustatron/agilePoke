@@ -43,13 +43,13 @@ const Poker = () => {
 
   return (
     <div>
-      {loading && <div>...loading</div>}
+      {/* {loading && <div>...loading</div>}
       {roomDataReal && !loading && !error && (
         <PokerBoard
           roomId={query.id as string}
           roomData={roomDataReal as Room}
         />
-      )}
+      )} */}
     </div>
   )
 }
