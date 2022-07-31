@@ -8,11 +8,11 @@ import {
 } from "@chakra-ui/react"
 import React, { useCallback, useEffect, useState } from "react"
 import { Room, UserData } from "../../utils/types"
-import { doc, updateDoc } from "firebase/firestore"
 
 import BasicForm from "../BasicForm"
 import Card from "../Card"
 import User from "../User"
+import { doc } from "firebase/firestore"
 import { getFirestore } from "../../utils/firebase"
 import { useUpdateDoc } from "../../hooks"
 import { v4 } from "uuid"
@@ -76,6 +76,19 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     })
   }
 
+  const handleResetUser = () => {
+    const newUserList = roomData.users.filter(
+      (user) => user.id !== currentUser!.id
+    )
+    updateRoomData({ users: newUserList })
+    setCurrentUser(undefined)
+  }
+
+  const handleResetAllUsers = () => {
+    updateRoomData({ users: [] })
+    setCurrentUser(undefined)
+  }
+
   const updateUserList = async (user: UserData) => {
     updateRoomData({
       users: [...roomData.users, user],
@@ -131,6 +144,8 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
               >
                 Reset Vote
               </Button>
+              <Button onClick={handleResetUser}>Reset User Name</Button>
+              <Button onClick={handleResetAllUsers}>Remove all users</Button>
             </Center>
             <HStack spacing="10px" justify="center" paddingTop={4}>
               {roomData.users.map((user) => (
