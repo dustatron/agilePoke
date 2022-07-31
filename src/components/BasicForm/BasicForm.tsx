@@ -20,7 +20,7 @@ const BasicForm = ({ onSubmit, title, buttonCopy, placeholder }: Props) => {
   const [roomName, setRoomName] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputVal = e.target.value.replace(/[^a-z0-9 ]/gi, "")
+    const inputVal = e.target.value.replace(/[^a-z0-9-]/gi, "")
     if (inputVal.length < 25) {
       setRoomName(inputVal)
     }

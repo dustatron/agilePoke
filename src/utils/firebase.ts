@@ -14,21 +14,6 @@ const config = {
   measurementId: "G-P6L13WER2P",
 }
 
-// const isBrowser = typeof window !== "undefined"
-
-// function initializeFirebase(config: any) {
-//   if (isBrowser) {
-//     const app = initializeApp(config)
-//     getAnalytics(app)
-//     return app
-//   }
-// }
-
-// const app = initializeFirebase(firebaseConfig)
-// const firebaseApp = getFirestore(app)
-
-// export default firebaseApp
-
 const firebaseIsRunning = () => !!getApps().length
 
 export function getApp() {

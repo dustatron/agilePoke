@@ -3,6 +3,7 @@ import {
   Button,
   Center,
   Container,
+  Flex,
   HStack,
   Heading,
 } from "@chakra-ui/react"
@@ -11,6 +12,7 @@ import { Room, UserData } from "../../utils/types"
 
 import BasicForm from "../BasicForm"
 import Card from "../Card"
+import SettingsMenu from "../SettingsMenu"
 import User from "../User"
 import { doc } from "firebase/firestore"
 import { getFirestore } from "../../utils/firebase"
@@ -76,28 +78,15 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     })
   }
 
-  const handleResetUser = () => {
-    const newUserList = roomData.users.filter(
-      (user) => user.id !== currentUser!.id
-    )
-    updateRoomData({ users: newUserList })
-    setCurrentUser(undefined)
-  }
-
-  const handleResetAllUsers = () => {
-    updateRoomData({ users: [] })
-    setCurrentUser(undefined)
-  }
-
   const updateUserList = async (user: UserData) => {
     updateRoomData({
       users: [...roomData.users, user],
     })
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoUpdateUserList = useCallback(
     (user: UserData) => updateUserList(user),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentUser]
   )
 
@@ -121,7 +110,21 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
 
   return (
     <Container size="lg" maxW="4xl">
-      <Heading textAlign="center">Room : {roomData.name}</Heading>
+      <HStack justify="space-between">
+        <Heading textAlign="center">
+          {roomData.name.charAt(0).toUpperCase() +
+            roomData.name.slice(1).toLowerCase()}{" "}
+          Room
+        </Heading>
+        {currentUser && (
+          <SettingsMenu
+            setCurrentUser={setCurrentUser}
+            currentUser={currentUser}
+            roomId={roomId}
+            users={roomData.users}
+          />
+        )}
+      </HStack>
       {!currentUser && (
         <BasicForm
           title="Enter Name"
@@ -132,21 +135,14 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
       )}
       {currentUser && (
         <>
-          <Box h="60vh" w="100%">
-            <Center h="10" paddingTop={4}>
-              <Button onClick={handleShow}>
-                {roomData.isVoting ? "Show" : "Hide"}
-              </Button>
-              <Button
-                colorScheme="blue"
-                onClick={handleReset}
-                isDisabled={roomData.isVoting}
-              >
-                Reset Vote
-              </Button>
-              <Button onClick={handleResetUser}>Reset User Name</Button>
-              <Button onClick={handleResetAllUsers}>Remove all users</Button>
-            </Center>
+          <Flex
+            h="60vh"
+            w="100%"
+            justifyContent="space-between"
+            direction="column"
+            alignContent="space-between"
+            padding="16"
+          >
             <HStack spacing="10px" justify="center" paddingTop={4}>
               {roomData.users.map((user) => (
                 <User
@@ -158,7 +154,15 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
                 />
               ))}
             </HStack>
-          </Box>
+            <Flex h="10" paddingTop={4} justifyContent="space-between">
+              <Button onClick={handleReset} colorScheme="orange" padding="5">
+                Reset Vote
+              </Button>
+              <Button colorScheme="blue" padding="5" onClick={handleShow}>
+                {roomData.isVoting ? "Show" : "Hide"}
+              </Button>
+            </Flex>
+          </Flex>
           <HStack spacing="5px" justify="center">
             {options.map((num) => (
               <Card
