@@ -13,28 +13,31 @@ const Card = ({ number, isVoting, select }: Props) => {
     <>
       {isVoting && (
         <Button
-          w="90px"
-          h="100px"
-          bg="blue.100"
+          minW="100px"
+          minH="120px"
+          bg="gray.100"
           borderRadius="md"
           borderWidth="2px"
-          borderColor="blue.400"
+          borderColor="gray.200"
           onClick={() => select(number)}
         >
-          <Text fontSize="2xl"> {number} </Text>
+          <Text fontSize="4xl" fontWeight="medium" color="black">
+            {" "}
+            {number}{" "}
+          </Text>
         </Button>
       )}
       {!isVoting && (
         <Center
-          w="90px"
-          h="100px"
-          bg="green.100"
+          minW="100px"
+          minH="120px"
+          bg="gray.200"
           borderRadius="md"
           borderWidth="2px"
-          borderColor="green.400"
+          borderColor="gray.300"
           textAlign="center"
         >
-          <Text fontSize="2xl"> 💎 </Text>
+          <Text fontSize="4xl"> 🌚 </Text>
         </Center>
       )}
     </>

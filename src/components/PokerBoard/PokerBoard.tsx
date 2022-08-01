@@ -1,11 +1,12 @@
 import {
-  Box,
   Button,
-  Center,
   Container,
   Flex,
   HStack,
   Heading,
+  Stack,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react"
 import React, { useCallback, useEffect, useState } from "react"
 import { Room, UserData } from "../../utils/types"
@@ -31,7 +32,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
   const thisDocRef = doc(firebaseApp, "rooms", roomId)
   const updateRoomData = useUpdateDoc(thisDocRef)
 
-  const options = [1, 2, 3, 5, 8, 13, 21, 34]
+  const options = [1, 2, 3, 5, 8, 13]
   const isBrowser = typeof window !== "undefined"
 
   const handleAddUser = (currentUser: string) => {
@@ -109,8 +110,17 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
   }, [currentUser])
 
   return (
-    <Container size="lg" maxW="4xl">
-      <HStack justify="space-between">
+    <Container
+      size="lg"
+      maxW={["2xl", "4xl"]}
+      bg="white"
+      border="1px"
+      borderColor="#d4d4d4"
+      padding="5"
+      borderRadius="xl"
+      boxShadow="xl"
+    >
+      <Stack direction="row" justify="space-between">
         <Heading textAlign="center">
           {roomData.name.charAt(0).toUpperCase() +
             roomData.name.slice(1).toLowerCase()}{" "}
@@ -124,7 +134,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
             users={roomData.users}
           />
         )}
-      </HStack>
+      </Stack>
       {!currentUser && (
         <BasicForm
           title="Enter Name"
@@ -136,43 +146,49 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
       {currentUser && (
         <>
           <Flex
-            h="60vh"
+            h="50vh"
             w="100%"
             justifyContent="space-between"
             direction="column"
             alignContent="space-between"
-            padding="16"
+            padding="5"
           >
-            <HStack spacing="10px" justify="center" paddingTop={4}>
+            <Wrap spacing="10px" justify="center">
               {roomData.users.map((user) => (
-                <User
-                  key={user?.id}
-                  isVoting={roomData.isVoting}
-                  name={user?.name}
-                  vote={user?.vote}
-                  isCurrentUser={user?.id === currentUser.id}
-                />
+                <WrapItem key={user?.id}>
+                  <User
+                    isVoting={roomData.isVoting}
+                    name={user?.name}
+                    vote={user?.vote}
+                    isCurrentUser={user?.id === currentUser.id}
+                  />
+                </WrapItem>
               ))}
-            </HStack>
-            <Flex h="10" paddingTop={4} justifyContent="space-between">
-              <Button onClick={handleReset} colorScheme="orange" padding="5">
-                Reset Vote
-              </Button>
-              <Button colorScheme="blue" padding="5" onClick={handleShow}>
-                {roomData.isVoting ? "Show" : "Hide"}
-              </Button>
-            </Flex>
+            </Wrap>
           </Flex>
-          <HStack spacing="5px" justify="center">
+          <Wrap direction="row" spacing="20px" justify="center">
             {options.map((num) => (
-              <Card
-                key={num}
-                number={num}
-                isVoting={roomData.isVoting}
-                select={handleSelection}
-              />
+              <WrapItem key={num}>
+                <Card
+                  number={num}
+                  isVoting={roomData.isVoting}
+                  select={handleSelection}
+                />
+              </WrapItem>
             ))}
-          </HStack>
+          </Wrap>
+          <Flex paddingTop="20px" justifyContent="space-between">
+            <Button onClick={handleReset} colorScheme="orange" padding="5">
+              Reset Vote
+            </Button>
+            <Button
+              colorScheme={roomData.isVoting ? "green" : "blue"}
+              padding="5px 40px"
+              onClick={handleShow}
+            >
+              {roomData.isVoting ? "Show" : "Hide"}
+            </Button>
+          </Flex>
         </>
       )}
     </Container>
