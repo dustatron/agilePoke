@@ -1,3 +1,4 @@
+import { Box, Center, Spinner, Stack, Text } from "@chakra-ui/react"
 import React, { useCallback, useEffect } from "react"
 import { doc, setDoc } from "firebase/firestore"
 
@@ -43,7 +44,24 @@ const Poker = () => {
 
   return (
     <div>
-      {loading && <div>...loading</div>}
+      {loading && (
+        <Stack w="100%" minH="60vh" justifyContent="center">
+          <Box>
+            <Text as="h2" fontWeight="bold" fontSize="xl" textAlign="center">
+              Loading
+            </Text>
+          </Box>
+          <Center>
+            <Spinner
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="blue.500"
+              size="xl"
+            />
+          </Center>
+        </Stack>
+      )}
       {roomDataReal && !loading && !error && (
         <PokerBoard
           roomId={query.id as string}
