@@ -146,7 +146,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
       {currentUser && (
         <>
           <Flex
-            h="50vh"
+            minH="43vh"
             w="100%"
             justifyContent="space-between"
             direction="column"

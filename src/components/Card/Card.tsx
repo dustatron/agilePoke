@@ -11,35 +11,20 @@ type Props = {
 const Card = ({ number, isVoting, select }: Props) => {
   return (
     <>
-      {isVoting && (
-        <Button
-          minW="100px"
-          minH="120px"
-          bg="gray.100"
-          borderRadius="md"
-          borderWidth="2px"
-          borderColor="gray.200"
-          onClick={() => select(number)}
-        >
-          <Text fontSize="4xl" fontWeight="medium" color="black">
-            {" "}
-            {number}{" "}
-          </Text>
-        </Button>
-      )}
-      {!isVoting && (
-        <Center
-          minW="100px"
-          minH="120px"
-          bg="gray.200"
-          borderRadius="md"
-          borderWidth="2px"
-          borderColor="gray.300"
-          textAlign="center"
-        >
-          <Text fontSize="4xl"> 🌚 </Text>
-        </Center>
-      )}
+      <Button
+        minW="100px"
+        minH="120px"
+        bg="gray.100"
+        borderRadius="md"
+        borderWidth="2px"
+        borderColor="gray.200"
+        onClick={() => select(number)}
+      >
+        <Text fontSize="4xl" fontWeight="medium" color="black">
+          {" "}
+          {number}{" "}
+        </Text>
+      </Button>
     </>
   )
 }
