@@ -7,5 +7,4 @@ export type UserData = {
 export interface Room {
   name: string
   isVoting: boolean
-  users: UserData[]
 }

@@ -26,13 +26,13 @@ const Poker = () => {
   const roomDataReal = roomData?.data()
 
   const makeNewRoom = async () => {
+    const roomName = query.id as string
     const newRoom: Room = {
       name: query.id as string,
       isVoting: true,
-      users: [],
     }
     try {
-      await setDoc(doc(firebaseApp, "rooms", query.id as string), newRoom)
+      await setDoc(doc(firebaseApp, "rooms", roomName.toLowerCase()), newRoom)
     } catch (e) {
       console.error("Error adding document: ", e)
     }

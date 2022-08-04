@@ -40,10 +40,10 @@ const SettingsMenu = ({
     <Box display="flex" justifyContent="right">
       <Menu>
         <MenuButton as={Button} rightIcon={"⚙️"}>
-          Reset
+          Settings
         </MenuButton>
         <MenuList>
-          <MenuItem onClick={handleResetUser}>Reset User Name</MenuItem>
+          <MenuItem onClick={handleResetUser}>Reset your name</MenuItem>
           <MenuItem onClick={handleResetAllUsers}>Remove all users</MenuItem>
         </MenuList>
       </Menu>
