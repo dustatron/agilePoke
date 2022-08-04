@@ -5,39 +5,35 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  VStack,
 } from "@chakra-ui/react"
+import { useDeleteVoters, useUpdateDoc } from "../../hooks"
 
 import React from "react"
 import { UserData } from "../../utils/types"
 import { doc } from "firebase/firestore"
 import { getFirestore } from "../../utils/firebase"
-import { useUpdateDoc } from "../../hooks"
 
 type Props = {
   roomId: string
-  users: UserData[]
+  voteData: UserData[]
   currentUser: UserData
   setCurrentUser: (user?: UserData) => void
 }
 
 const SettingsMenu = ({
   roomId,
-  users,
+  voteData,
   currentUser,
   setCurrentUser,
 }: Props) => {
-  const firebaseApp = getFirestore()
-  const thisDocRef = doc(firebaseApp, "rooms", roomId)
-  const updateRoomData = useUpdateDoc(thisDocRef)
+  const { deleteAllVoters, deleteCurrentUser } = useDeleteVoters(roomId)
 
   const handleResetAllUsers = () => {
-    updateRoomData({ users: [] })
-    setCurrentUser(undefined)
+    deleteAllVoters(voteData)
+    setCurrentUser()
   }
   const handleResetUser = () => {
-    const newUserList = users.filter((user) => user.id !== currentUser!.id)
-    updateRoomData({ users: newUserList })
+    deleteCurrentUser(currentUser)
     setCurrentUser()
   }
   return (

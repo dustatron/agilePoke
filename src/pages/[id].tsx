@@ -1,11 +1,11 @@
 import { Box, Center, Spinner, Stack, Text } from "@chakra-ui/react"
 import React, { useCallback, useEffect } from "react"
-import { doc, setDoc } from "firebase/firestore"
+import { Room, UserData } from "../utils/types"
+import { collection, doc, setDoc } from "firebase/firestore"
+import { useCollection, useDocument } from "react-firebase-hooks/firestore"
 
 import PokerBoard from "../components/PokerBoard"
-import { Room } from "../utils/types"
 import { getFirestore } from "../utils/firebase"
-import { useDocument } from "react-firebase-hooks/firestore"
 import { useRouter } from "next/router"
 
 const Poker = () => {
@@ -16,6 +16,12 @@ const Poker = () => {
   const [roomData, loading, error] = useDocument(
     doc(firebaseApp, "rooms", `${query.id}`)
   )
+
+  const [votes, votesLoading, votesError] = useCollection(
+    collection(firebaseApp, `rooms/${query.id}/votes`)
+  )
+
+  const voteData = votes?.docs.map((doc) => doc.data())
 
   const roomDataReal = roomData?.data()
 
@@ -66,6 +72,8 @@ const Poker = () => {
         <PokerBoard
           roomId={query.id as string}
           roomData={roomDataReal as Room}
+          voteData={voteData as UserData[]}
+          votesLoading={votesLoading}
         />
       )}
     </div>

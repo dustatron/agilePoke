@@ -2,75 +2,53 @@ import {
   Button,
   Container,
   Flex,
-  HStack,
   Heading,
   Stack,
   Wrap,
   WrapItem,
 } from "@chakra-ui/react"
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Room, UserData } from "../../utils/types"
+import { useAddVoter, useResetAllVotes, useUpdateDoc } from "../../hooks"
 
 import BasicForm from "../BasicForm"
 import Card from "../Card"
 import SettingsMenu from "../SettingsMenu"
 import User from "../User"
-import { doc } from "firebase/firestore"
 import { getFirestore } from "../../utils/firebase"
-import { useUpdateDoc } from "../../hooks"
-import { v4 } from "uuid"
 
 type Props = {
   roomData: Room
   roomId: string
+  voteData: UserData[]
+  votesLoading: boolean
 }
 
-const PokerBoard = ({ roomData, roomId }: Props) => {
+const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
   const [currentUser, setCurrentUser] = useState<UserData>()
 
-  const firebaseApp = getFirestore()
-  const thisDocRef = doc(firebaseApp, "rooms", roomId)
-  const updateRoomData = useUpdateDoc(thisDocRef)
-
-  const options = [1, 2, 3, 5, 8, 13]
   const isBrowser = typeof window !== "undefined"
 
-  const handleAddUser = (currentUser: string) => {
-    const newUser: UserData = {
-      name: currentUser,
-      vote: 0,
-      id: v4(),
+  const firebaseApp = getFirestore()
+  const { updateRoomData, updateVote } = useUpdateDoc(firebaseApp, roomId)
+  const { addNewVoter, addVoterByUserData } = useAddVoter()
+  const resetAllVotes = useResetAllVotes(voteData, roomId)
+
+  const options = [1, 2, 3, 5, 8, 13]
+
+  const handleAddUser = async (currentUser: string) => {
+    const newVoter = await addNewVoter(currentUser, roomId)
+    if (newVoter) {
+      setCurrentUser(newVoter)
+      window.localStorage.setItem("agile-poker", JSON.stringify(newVoter))
     }
-    setCurrentUser(newUser)
-    if (isBrowser) {
-      window.localStorage.setItem("agile-poker", JSON.stringify(newUser))
-    }
-    updateRoomData({
-      users: [...roomData.users, newUser],
-    })
   }
 
-  const handleSelection = (vote: number) => {
-    const updateUserData: UserData = { ...currentUser!, vote }
-    setCurrentUser(updateUserData)
-
-    const newUserData = [...roomData.users]
-    const currentUserIndex = newUserData.findIndex(
-      (user: UserData) => user.id === updateUserData.id
-    )
-    newUserData[currentUserIndex].vote = vote
-
-    updateRoomData({
-      users: newUserData,
-    })
-  }
-
-  const handleReset = () => {
-    const data = {
-      isVoting: true,
-      users: roomData.users.map((user) => ({ ...user, vote: 0 })),
+  const handleUpdateVote = (vote: number) => {
+    if (currentUser) {
+      setCurrentUser({ ...currentUser!, vote })
+      updateVote(currentUser, { vote })
     }
-    updateRoomData(data)
   }
 
   const handleShow = () => {
@@ -79,18 +57,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     })
   }
 
-  const updateUserList = async (user: UserData) => {
-    updateRoomData({
-      users: [...roomData.users, user],
-    })
-  }
-
-  const memoUpdateUserList = useCallback(
-    (user: UserData) => updateUserList(user),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentUser]
-  )
-
+  // Set currentUser from localStorage
   useEffect(() => {
     if (isBrowser) {
       const fromLocalStorage = window.localStorage.getItem("agile-poker")
@@ -99,12 +66,13 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Add user to firebase if currentUser is not in voterData
   useEffect(() => {
-    const isUserInRoomData = !!roomData.users.find(
+    const isUserInVoteData = !!voteData?.find(
       (user) => user?.id === currentUser?.id
     )
-    if (!isUserInRoomData && currentUser) {
-      memoUpdateUserList(currentUser)
+    if (!isUserInVoteData && currentUser) {
+      addVoterByUserData(currentUser, roomId)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser])
@@ -131,7 +99,7 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
             setCurrentUser={setCurrentUser}
             currentUser={currentUser}
             roomId={roomId}
-            users={roomData.users}
+            voteData={voteData}
           />
         )}
       </Stack>
@@ -154,16 +122,18 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
             padding="5"
           >
             <Wrap spacing="10px" justify="center">
-              {roomData.users.map((user) => (
-                <WrapItem key={user?.id}>
-                  <User
-                    isVoting={roomData.isVoting}
-                    name={user?.name}
-                    vote={user?.vote}
-                    isCurrentUser={user?.id === currentUser.id}
-                  />
-                </WrapItem>
-              ))}
+              {votesLoading && <>...loading</>}
+              {!votesLoading &&
+                voteData.map((user) => (
+                  <WrapItem key={user?.id}>
+                    <User
+                      isVoting={roomData.isVoting}
+                      name={user?.name}
+                      vote={user?.vote}
+                      isCurrentUser={user?.id === currentUser.id}
+                    />
+                  </WrapItem>
+                ))}
             </Wrap>
           </Flex>
           <Wrap direction="row" spacing="20px" justify="center">
@@ -172,13 +142,13 @@ const PokerBoard = ({ roomData, roomId }: Props) => {
                 <Card
                   number={num}
                   isVoting={roomData.isVoting}
-                  select={handleSelection}
+                  select={handleUpdateVote}
                 />
               </WrapItem>
             ))}
           </Wrap>
           <Flex paddingTop="20px" justifyContent="space-between">
-            <Button onClick={handleReset} colorScheme="orange" padding="5">
+            <Button onClick={resetAllVotes} colorScheme="orange" padding="5">
               Reset Vote
             </Button>
             <Button
