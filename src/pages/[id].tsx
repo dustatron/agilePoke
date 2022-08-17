@@ -70,7 +70,7 @@ const Poker = () => {
       )}
       {roomDataReal && !loading && !error && (
         <>
-          <Heading textAlign="center" marginBottom={5}>
+          <Heading textAlign="center" marginBottom={2}>
             {roomDataReal.name.charAt(0).toUpperCase() +
               roomDataReal.name.slice(1).toLowerCase()}{" "}
             Room
