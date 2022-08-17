@@ -39,7 +39,12 @@ const SettingsMenu = ({
   return (
     <Box display="flex" justifyContent="right">
       <Menu>
-        <MenuButton as={Button} rightIcon={"⚙️"}>
+        <MenuButton
+          as={Button}
+          rightIcon={"⚙️"}
+          colorScheme="twitter"
+          variant="outline"
+        >
           Settings
         </MenuButton>
         <MenuList>

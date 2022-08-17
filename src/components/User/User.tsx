@@ -13,13 +13,14 @@ const User = ({ name, isVoting, vote, isCurrentUser }: Props) => {
   const hasVote = vote && vote > 0
   return (
     <Box
-      borderWidth="2px"
-      borderColor="#d4d4d4"
+      borderWidth="3px"
+      borderColor="#e7e7e7"
       padding={4}
       minH="120px"
       minW="150px"
-      borderRadius="md"
-      bg="#fafafa"
+      borderRadius="xl"
+      bg="white"
+      // boxShadow="md"
     >
       {name && (
         <Text textAlign="center" fontSize="xl" fontWeight="bold">

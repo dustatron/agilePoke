@@ -1,9 +1,10 @@
 import {
+  Badge,
   Button,
   Container,
   Flex,
-  Heading,
   Stack,
+  Text,
   Wrap,
   WrapItem,
 } from "@chakra-ui/react"
@@ -57,6 +58,13 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
     })
   }
 
+  const handleResetAllVotes = () => {
+    resetAllVotes()
+    updateRoomData({
+      isVoting: true,
+    })
+  }
+
   // Set currentUser from localStorage
   useEffect(() => {
     if (isBrowser) {
@@ -87,13 +95,18 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
       padding="5"
       borderRadius="xl"
       boxShadow="xl"
+      backgroundColor={roomData.isVoting ? "gray.50" : "#fafafa"}
     >
       <Stack direction="row" justify="space-between">
-        <Heading textAlign="center">
-          {roomData.name.charAt(0).toUpperCase() +
-            roomData.name.slice(1).toLowerCase()}{" "}
-          Room
-        </Heading>
+        <Text as="h3" fontWeight={600} fontSize={20}>
+          Pointing{" "}
+          <Badge
+            variant="solid"
+            colorScheme={roomData.isVoting ? "blue" : "green"}
+          >
+            {roomData.isVoting ? "in progress" : "Finished"}
+          </Badge>
+        </Text>
         {currentUser && (
           <SettingsMenu
             setCurrentUser={setCurrentUser}
@@ -148,13 +161,19 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
             ))}
           </Wrap>
           <Flex paddingTop="20px" justifyContent="space-between">
-            <Button onClick={resetAllVotes} colorScheme="orange" padding="5">
+            <Button
+              onClick={handleResetAllVotes}
+              colorScheme="orange"
+              padding="5"
+              variant="outline"
+            >
               Reset Vote
             </Button>
             <Button
               colorScheme={roomData.isVoting ? "green" : "blue"}
               padding="5px 40px"
               onClick={handleShow}
+              variant="outline"
             >
               {roomData.isVoting ? "Show" : "Hide"}
             </Button>

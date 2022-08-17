@@ -1,4 +1,4 @@
-import { Box, Center, Spinner, Stack, Text } from "@chakra-ui/react"
+import { Box, Center, Heading, Spinner, Stack, Text } from "@chakra-ui/react"
 import React, { useCallback, useEffect } from "react"
 import { Room, UserData } from "../utils/types"
 import { collection, doc, setDoc } from "firebase/firestore"
@@ -69,12 +69,19 @@ const Poker = () => {
         </Stack>
       )}
       {roomDataReal && !loading && !error && (
-        <PokerBoard
-          roomId={query.id as string}
-          roomData={roomDataReal as Room}
-          voteData={voteData as UserData[]}
-          votesLoading={votesLoading}
-        />
+        <>
+          <Heading textAlign="center" marginBottom={5}>
+            {roomDataReal.name.charAt(0).toUpperCase() +
+              roomDataReal.name.slice(1).toLowerCase()}{" "}
+            Room
+          </Heading>
+          <PokerBoard
+            roomId={query.id as string}
+            roomData={roomDataReal as Room}
+            voteData={voteData as UserData[]}
+            votesLoading={votesLoading}
+          />
+        </>
       )}
     </div>
   )
