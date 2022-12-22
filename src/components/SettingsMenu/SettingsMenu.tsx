@@ -37,7 +37,7 @@ const SettingsMenu = ({
     setCurrentUser()
   }
   return (
-    <Box display="flex" justifyContent="right">
+    <Box display="flex" justifyContent="right" marginTop='3'>
       <Menu>
         <MenuButton
           as={Button}

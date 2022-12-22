@@ -1,5 +1,6 @@
 import {
   Badge,
+  Box,
   Button,
   Container,
   Flex,
@@ -7,87 +8,140 @@ import {
   Text,
   Wrap,
   WrapItem,
-} from "@chakra-ui/react"
-import React, { useEffect, useState } from "react"
-import { Room, UserData } from "../../utils/types"
-import { useAddVoter, useResetAllVotes, useUpdateDoc } from "../../hooks"
+  Icon,
+} from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { Room, UserData } from "../../utils/types";
+import { useAddVoter, useResetAllVotes, useUpdateDoc } from "../../hooks";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { GrPowerReset } from "react-icons/gr";
 
-import BasicForm from "../BasicForm"
-import Card from "../Card"
-import SettingsMenu from "../SettingsMenu"
-import User from "../User"
-import { getFirestore } from "../../utils/firebase"
+import BasicForm from "../BasicForm";
+import Card from "../Card";
+import SettingsMenu from "../SettingsMenu";
+import User from "../User";
+import { getFirestore } from "../../utils/firebase";
+
+type ToolBarProps = {
+  roomData: Room;
+  handleShow: () => void;
+  handleResetAllVotes: () => void;
+};
+
+const ToolBar = ({
+  roomData,
+  handleShow,
+  handleResetAllVotes,
+}: ToolBarProps) => {
+  return (
+    <>
+      {roomData.isVoting && (
+        <Box bg="blue.500" color="white" textAlign="center">
+          <Text as="h3" fontWeight={600} fontSize={20}>
+            Pointing In Progress
+          </Text>
+        </Box>
+      )}
+
+      {!roomData.isVoting && (
+        <Box bg="green.500" color="white" textAlign="center">
+          <Text as="h3" fontWeight={600} fontSize={20}>
+            Showing
+          </Text>
+        </Box>
+      )}
+      <Stack direction="row" paddingTop="20px" justifyContent="start">
+        <Button
+          colorScheme={roomData.isVoting ? "green" : "blue"}
+          padding="5px 30px"
+          onClick={handleShow}
+          variant="outline"
+        >
+          <Icon
+            as={roomData.isVoting ? AiOutlineEye : AiOutlineEyeInvisible}
+            marginRight={2}
+          />
+          {roomData.isVoting ? "Show" : "Hide"}
+        </Button>
+        <Button onClick={handleResetAllVotes} padding="3" variant="outline">
+          Reset Vote
+          <Icon as={GrPowerReset} marginLeft={2} />
+        </Button>
+      </Stack>
+    </>
+  );
+};
 
 type Props = {
-  roomData: Room
-  roomId: string
-  voteData: UserData[]
-  votesLoading: boolean
-}
+  roomData: Room;
+  roomId: string;
+  voteData: UserData[];
+  votesLoading: boolean;
+};
 
 const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
-  const [currentUser, setCurrentUser] = useState<UserData>()
+  const [currentUser, setCurrentUser] = useState<UserData>();
 
-  const isBrowser = typeof window !== "undefined"
+  const isBrowser = typeof window !== "undefined";
 
-  const firebaseApp = getFirestore()
-  const { updateRoomData, updateVote } = useUpdateDoc(firebaseApp, roomId)
-  const { addNewVoter, addVoterByUserData } = useAddVoter()
-  const resetAllVotes = useResetAllVotes(voteData, roomId)
+  const firebaseApp = getFirestore();
+  const { updateRoomData, updateVote } = useUpdateDoc(firebaseApp, roomId);
+  const { addNewVoter, addVoterByUserData } = useAddVoter();
+  const resetAllVotes = useResetAllVotes(voteData, roomId);
 
-  const options = [1, 2, 3, 5, 8, 13]
+  const options = [1, 2, 3, 5, 8, 13, 21, 34, 55, 99];
 
   const handleAddUser = async (currentUser: string) => {
-    const newVoter = await addNewVoter(currentUser, roomId)
+    const newVoter = await addNewVoter(currentUser, roomId);
     if (newVoter) {
-      setCurrentUser(newVoter)
-      window.localStorage.setItem("agile-poker", JSON.stringify(newVoter))
+      setCurrentUser(newVoter);
+      window.localStorage.setItem("agile-poker", JSON.stringify(newVoter));
     }
-  }
+  };
 
   const handleUpdateVote = (vote: number) => {
     if (currentUser) {
-      setCurrentUser({ ...currentUser!, vote })
-      updateVote(currentUser, { vote })
+      setCurrentUser({ ...currentUser!, vote });
+      updateVote(currentUser, { vote });
     }
-  }
+  };
 
   const handleShow = () => {
     updateRoomData({
       isVoting: !roomData.isVoting,
-    })
-  }
+    });
+  };
 
   const handleResetAllVotes = () => {
-    resetAllVotes()
+    resetAllVotes();
     updateRoomData({
       isVoting: true,
-    })
-  }
+    });
+  };
 
   // Set currentUser from localStorage
   useEffect(() => {
     if (isBrowser) {
-      const fromLocalStorage = window.localStorage.getItem("agile-poker")
-      setCurrentUser(fromLocalStorage && JSON.parse(fromLocalStorage))
+      const fromLocalStorage = window.localStorage.getItem("agile-poker");
+      setCurrentUser(fromLocalStorage && JSON.parse(fromLocalStorage));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   // Add user to firebase if currentUser is not in voterData
   useEffect(() => {
     const isUserInVoteData = !!voteData?.find(
       (user) => user?.id === currentUser?.id
-    )
+    );
     if (!isUserInVoteData && currentUser) {
-      addVoterByUserData(currentUser, roomId)
+      addVoterByUserData(currentUser, roomId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser])
+  }, [currentUser]);
 
   return (
     <Container
-      size="lg"
+      size="2xl"
       maxW={["2xl", "4xl"]}
       bg="white"
       border="1px"
@@ -97,31 +151,24 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
       boxShadow="xl"
       backgroundColor={roomData.isVoting ? "gray.50" : "#fafafa"}
     >
-      <Stack direction="row" justify="space-between">
-        <Text as="h3" fontWeight={600} fontSize={20}>
-          Pointing{" "}
-          <Badge
-            variant="solid"
-            colorScheme={roomData.isVoting ? "blue" : "green"}
-          >
-            {roomData.isVoting ? "in progress" : "Finished"}
-          </Badge>
-        </Text>
-        {currentUser && (
-          <SettingsMenu
-            setCurrentUser={setCurrentUser}
-            currentUser={currentUser}
-            roomId={roomId}
-            voteData={voteData}
-          />
-        )}
-      </Stack>
       {!currentUser && (
-        <BasicForm
-          title="Enter Name"
-          placeholder="Name"
-          buttonCopy="Go"
-          onSubmit={(name: string) => handleAddUser(name)}
+        <Box padding="2">
+          <Text as="h2" textAlign="center" fontSize="xl" fontWeight="bold">
+            Username to show on the board
+          </Text>
+          <BasicForm
+            title="Enter Name"
+            placeholder="Name"
+            buttonCopy="Go"
+            onSubmit={(name: string) => handleAddUser(name)}
+          />
+        </Box>
+      )}
+      {currentUser && (
+        <ToolBar
+          roomData={roomData}
+          handleResetAllVotes={handleResetAllVotes}
+          handleShow={handleShow}
         />
       )}
       {currentUser && (
@@ -149,7 +196,7 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
                 ))}
             </Wrap>
           </Flex>
-          <Wrap direction="row" spacing="20px" justify="center">
+          <Wrap direction="row" spacing="10px" justify="center">
             {options.map((num) => (
               <WrapItem key={num}>
                 <Card
@@ -160,28 +207,19 @@ const PokerBoard = ({ roomData, roomId, voteData, votesLoading }: Props) => {
               </WrapItem>
             ))}
           </Wrap>
-          <Flex paddingTop="20px" justifyContent="space-between">
-            <Button
-              onClick={handleResetAllVotes}
-              colorScheme="orange"
-              padding="5"
-              variant="outline"
-            >
-              Reset Vote
-            </Button>
-            <Button
-              colorScheme={roomData.isVoting ? "green" : "blue"}
-              padding="5px 40px"
-              onClick={handleShow}
-              variant="outline"
-            >
-              {roomData.isVoting ? "Show" : "Hide"}
-            </Button>
-          </Flex>
+
+          {currentUser && (
+            <SettingsMenu
+              setCurrentUser={setCurrentUser}
+              currentUser={currentUser}
+              roomId={roomId}
+              voteData={voteData}
+            />
+          )}
         </>
       )}
     </Container>
-  )
-}
+  );
+};
 
-export default PokerBoard
+export default PokerBoard;

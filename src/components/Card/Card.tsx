@@ -12,8 +12,8 @@ const Card = ({ number, isVoting, select }: Props) => {
   return (
     <>
       <Button
-        minW="100px"
-        minH="120px"
+        minW="70px"
+        minH="85px"
         bg="gray.100"
         borderRadius="md"
         borderWidth="2px"
@@ -21,7 +21,6 @@ const Card = ({ number, isVoting, select }: Props) => {
         onClick={() => select(number)}
       >
         <Text fontSize="4xl" fontWeight="medium" color="black">
-          {" "}
           {number}{" "}
         </Text>
       </Button>

@@ -1,4 +1,4 @@
-import { Box, Text } from "@chakra-ui/react"
+import { Box, Spinner, Text } from "@chakra-ui/react"
 
 import React from "react"
 
@@ -29,6 +29,7 @@ const User = ({ name, isVoting, vote, isCurrentUser }: Props) => {
       )}
       <Text textAlign="center" fontSize="2xl" fontWeight="bold">
         {isVoting && !!hasVote && "👍"}
+        {isVoting && !hasVote && (<Spinner />)}
       </Text>
       {!isVoting && (
         <Text textAlign="center" fontSize="3xl">
