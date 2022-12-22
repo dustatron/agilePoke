@@ -22,7 +22,7 @@ const Poker = () => {
     doc(firebaseApp, "rooms", `${query.id}`)
   );
 
-  const docRef = doc(firebaseApp, "rooms", `${query.id}`);
+  // const docRef = doc(firebaseApp, "rooms", `${query.id}`);
   // getSnap(docRef).then((result) => setDocR(result));
 
   const [votes, votesLoading, votesError] = useCollection(
@@ -56,11 +56,11 @@ const Poker = () => {
     }
   }, [error, loading, makeNewRoomMemo, roomDataReal]);
 
-  useEffect(() => {
-    getSnap(docRef).then((result) => {
-      console.log("result", result);
-    });
-  }, []);
+  // useEffect(() => {
+  //   getSnap(docRef).then((result) => {
+  //     console.log("result", result);
+  //   });
+  // }, []);
 
   console.log("roomData", roomData);
   console.log("loading", loading);
