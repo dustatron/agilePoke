@@ -1,16 +1,13 @@
 import {
-  DocumentReference,
   doc,
-  getFirestore,
   setDoc,
-  updateDoc,
 } from "firebase/firestore"
 
 import { UserData } from "../utils/types"
 import { v4 } from "uuid"
+import { firestoreDB } from "../utils/firebase"
 
 const useAddVoter = () => {
-  const firebaseApp = getFirestore()
 
   const addNewVoter = async (userName: string, roomId: string) => {
     const userId = v4()
@@ -20,7 +17,7 @@ const useAddVoter = () => {
       vote: 0,
     }
     try {
-      await setDoc(doc(firebaseApp, `rooms/${roomId}/votes`, userId), newVoter)
+      await setDoc(doc(firestoreDB, `rooms/${roomId}/votes`, userId), newVoter)
       return newVoter
     } catch (e) {
       console.error("Error adding vote: ", e)
@@ -30,7 +27,7 @@ const useAddVoter = () => {
   const addVoterByUserData = async (userData: UserData, roomId: string) => {
     try {
       await setDoc(
-        doc(firebaseApp, `rooms/${roomId}/votes`, userData.id),
+        doc(firestoreDB, `rooms/${roomId}/votes`, userData.id),
         userData
       )
     } catch (e) {

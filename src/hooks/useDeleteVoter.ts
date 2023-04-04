@@ -1,20 +1,21 @@
-import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore"
+import { deleteDoc, doc } from "firebase/firestore"
+import { firestoreDB } from "../utils/firebase"
 
 import { UserData } from "../utils/types"
 
 const useDeleteVoters = (roomId: string) => {
-  const firebaseApp = getFirestore()
+
 
   const deleteCurrentUser = async (voter: UserData) => {
     try {
-      await deleteDoc(doc(firebaseApp, `rooms/${roomId}/votes`, voter.id))
+      await deleteDoc(doc(firestoreDB, `rooms/${roomId}/votes`, voter.id))
     } catch (e) {
       console.error("Error removing currentUser", e)
     }
   }
   const deleteAllVoters = (voteData: UserData[]) => {
     voteData.forEach((voter) => {
-      const docRef = doc(firebaseApp, `rooms/${roomId}/votes`, voter.id)
+      const docRef = doc(firestoreDB, `rooms/${roomId}/votes`, voter.id)
       try {
         deleteDoc(docRef)
       } catch (e) {

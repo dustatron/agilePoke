@@ -5,39 +5,36 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-} from "@chakra-ui/react"
-import { useDeleteVoters, useUpdateDoc } from "../../hooks"
+} from "@chakra-ui/react";
+import { useDeleteVoters, useUpdateDoc } from "../../hooks";
 
-import React from "react"
-import { UserData } from "../../utils/types"
-import { doc } from "firebase/firestore"
-import { getFirestore } from "../../utils/firebase"
+import React from "react";
+import { UserData } from "../../utils/types";
+import { doc } from "firebase/firestore";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 type Props = {
-  roomId: string
-  voteData: UserData[]
-  currentUser: UserData
-  setCurrentUser: (user?: UserData) => void
-}
+  roomId: string;
+  voteData: UserData[];
+};
 
-const SettingsMenu = ({
-  roomId,
-  voteData,
-  currentUser,
-  setCurrentUser,
-}: Props) => {
-  const { deleteAllVoters, deleteCurrentUser } = useDeleteVoters(roomId)
+const SettingsMenu = ({ roomId, voteData }: Props) => {
+  const [currentUser, setCurrentUser] = useLocalStorage(
+    "mcPoker-user-name",
+    {}
+  );
+  const { deleteAllVoters, deleteCurrentUser } = useDeleteVoters(roomId);
 
   const handleResetAllUsers = () => {
-    deleteAllVoters(voteData)
-    setCurrentUser()
-  }
+    deleteAllVoters(voteData);
+    setCurrentUser();
+  };
   const handleResetUser = () => {
-    deleteCurrentUser(currentUser)
-    setCurrentUser()
-  }
+    deleteCurrentUser(currentUser);
+    setCurrentUser();
+  };
   return (
-    <Box display="flex" justifyContent="right" marginTop='3'>
+    <Box display="flex" justifyContent="right" marginTop="3">
       <Menu>
         <MenuButton
           as={Button}
@@ -53,7 +50,7 @@ const SettingsMenu = ({
         </MenuList>
       </Menu>
     </Box>
-  )
-}
+  );
+};
 
-export default SettingsMenu
+export default SettingsMenu;

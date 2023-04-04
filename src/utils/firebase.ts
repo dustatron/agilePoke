@@ -1,8 +1,7 @@
-import { getApp as _getApp, getApps, initializeApp } from "firebase/app"
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-import { getFirestore as _getFirestore } from "firebase/firestore"
-
-const config = {
+const firebaseConfig = {
   apiKey: "AIzaSyDWl4luXyraFeVBxBM7AeiZXCKJRUWCdts",
   authDomain: "mcagilepoker.firebaseapp.com",
   projectId: "mcagilepoker",
@@ -12,19 +11,6 @@ const config = {
   measurementId: "G-P6L13WER2P",
 }
 
-const firebaseIsRunning = () => !!getApps().length
+export const app = initializeApp(firebaseConfig);
+export const firestoreDB = getFirestore(app);
 
-export function getApp() {
-  if (!firebaseIsRunning()) initializeApp(config)
-
-  return _getApp()
-}
-
-export function getFirestore() {
-  const isRunning = firebaseIsRunning()
-  if (!isRunning) getApp()
-
-  const db = _getFirestore()
-
-  return db
-}
