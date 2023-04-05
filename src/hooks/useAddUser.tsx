@@ -7,29 +7,32 @@ import useLocalStorage from "./useLocalStorage";
 
 type Props = {
   roomId: string;
+  setUser: (user: UserData) => void;
+  userId?: string;
+  onSuccess?: () => void;
+  onSettled?: () => void;
 };
 
-function useAddUser({ roomId }: Props) {
-  const [currentUser, setCurrentUser] = useLocalStorage(
-    LocalStorageKeys.User,
-    {}
-  );
+function useAddUser({ roomId, onSuccess, onSettled, setUser, userId }: Props) {
   const fetcher = async (name: string) => {
-    const playerId = currentUser.id || v4();
+    const playerId = userId || v4();
     const newPlayer = {
       id: playerId,
-      name: name || currentUser.name,
+      name: name,
       vote: null,
     } as UserData;
 
-    await setDoc(
-      doc(firestoreDB, `rooms/${roomId}/votes`, playerId),
-      newPlayer
-    );
-    setCurrentUser(newPlayer);
-    return newPlayer;
+    await setDoc(doc(firestoreDB, `rooms/${roomId}/votes`, playerId), newPlayer)
+      .then((ref) => {
+        setUser(newPlayer);
+        return { newPlayer, ref };
+      })
+      .catch((error) => {
+        console.error(error);
+        return error;
+      });
   };
-  return useMutation(["voter", roomId, currentUser], fetcher);
+  return useMutation(["voter", roomId], fetcher, { onSuccess, onSettled });
 }
 
 export default useAddUser;

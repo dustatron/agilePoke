@@ -2,8 +2,10 @@ import { useRouter } from "next/router";
 import PokerGame from "../components/PokerGame";
 import { create } from "zustand";
 import useMakeRoom from "../hooks/useMakeRoom";
-import { useGetRoom } from "../hooks";
+import { useGetRoom, useLocalStorage } from "../hooks";
 import { Button, Spinner } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { LocalStorageKeys } from "../utils/types";
 
 type State = {
   isShowingAddUser: boolean;
@@ -22,7 +24,6 @@ const Poker = () => {
   const { id: roomId } = router.query;
   const { mutate: addRoom } = useMakeRoom({ roomId: roomId as string });
   const { data, isLoading, error, refetch } = useGetRoom({ roomId });
-  console.log("data", data);
 
   if (isLoading) {
     return <Spinner />;

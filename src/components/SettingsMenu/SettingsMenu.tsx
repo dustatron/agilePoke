@@ -6,12 +6,13 @@ import {
   MenuItem,
   MenuList,
 } from "@chakra-ui/react";
-import { useDeleteVoters, useUpdateDoc } from "../../hooks";
+import { useDeleteVoters } from "../../hooks";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { UserData } from "../../utils/types";
 import { doc } from "firebase/firestore";
 import useLocalStorage from "../../hooks/useLocalStorage";
+import { useAlertStore } from "../../pages/[id]";
 
 type Props = {
   roomId: string;
@@ -19,6 +20,9 @@ type Props = {
 };
 
 const SettingsMenu = ({ roomId, voteData }: Props) => {
+  const { setIsShowingAddUser } = useAlertStore((store) => ({
+    setIsShowingAddUser: store.setIsShowingAddUser,
+  }));
   const [currentUser, setCurrentUser] = useLocalStorage(
     "mcPoker-user-name",
     {}
@@ -27,12 +31,13 @@ const SettingsMenu = ({ roomId, voteData }: Props) => {
 
   const handleResetAllUsers = () => {
     deleteAllVoters(voteData);
-    setCurrentUser();
   };
   const handleResetUser = () => {
+    setCurrentUser({});
+    setIsShowingAddUser(true);
     deleteCurrentUser(currentUser);
-    setCurrentUser();
   };
+
   return (
     <Box display="flex" justifyContent="right" marginTop="3">
       <Menu>
@@ -45,8 +50,8 @@ const SettingsMenu = ({ roomId, voteData }: Props) => {
           Settings
         </MenuButton>
         <MenuList>
+          <MenuItem onClick={handleResetAllUsers}>Refresh users</MenuItem>
           <MenuItem onClick={handleResetUser}>Reset your name</MenuItem>
-          <MenuItem onClick={handleResetAllUsers}>Remove all users</MenuItem>
         </MenuList>
       </Menu>
     </Box>

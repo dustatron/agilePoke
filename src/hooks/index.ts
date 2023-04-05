@@ -3,6 +3,6 @@ import useDeleteVoters from "./useDeleteVoter"
 import useGetRoom from "./useGetRoom"
 import useLocalStorage from "./useLocalStorage"
 import useResetAllVotes from "./useResetAllVote"
-import useUpdateDoc from "./useUpdateDoc"
+import useUpdateVoteStatus from "./useUpdateVoteStatus"
 
-export { useUpdateDoc, useAddVoter, useResetAllVotes, useDeleteVoters, useLocalStorage, useGetRoom }
+export { useUpdateVoteStatus, useAddVoter, useResetAllVotes, useDeleteVoters, useLocalStorage, useGetRoom }

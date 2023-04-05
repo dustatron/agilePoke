@@ -1,37 +1,52 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Button, Heading, Text } from "@chakra-ui/react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import useAddUser from "../../hooks/useAddUser";
 import useLocalStorage from "../../hooks/useLocalStorage";
-import useMakeRoom from "../../hooks/useMakeRoom";
 import { useAlertStore } from "../../pages/[id]";
 import { firestoreDB } from "../../utils/firebase";
-import { Room, UserData } from "../../utils/types";
+import { LocalStorageKeys, Room, UserData } from "../../utils/types";
 import BasicForm from "../BasicForm";
 import PokerBoard from "../PokerBoard";
 
 type Props = { roomId: string };
 
 function PokerGame({ roomId }: Props) {
-  const [currentUser] = useLocalStorage("mcPoker-user-name", {});
+  const [currentUser, setCurrentUser] = useLocalStorage(
+    LocalStorageKeys.User,
+    "initial"
+  );
   const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
     state.setIsShowingAddUser,
   ]);
 
   const [roomData, setRoomData] = useState<Room>();
-  const [playersList, setPlayersList] = useState<UserData[]>();
+  const [votersList, setVotersList] = useState<UserData[]>();
 
-  console.log("roomData", roomData);
-  console.log("playersList", playersList);
-
-  const { mutate: addUser } = useAddUser({ roomId });
+  const { mutate: addUser, isLoading: isAddUserLoading } = useAddUser({
+    roomId,
+    setUser: (user) => setCurrentUser(user),
+    userId: currentUser?.id,
+    onSettled: () => {
+      setIsShowGetUser(false);
+    },
+  });
 
   useEffect(() => {
-    if (currentUser.name) {
-      setIsShowGetUser(false);
+    const isCurrentUserInRoom = !!votersList?.find(
+      (voter) => voter.id === currentUser?.id
+    );
+    if (!isCurrentUserInRoom && !isShowGetUser) {
+      addUser(currentUser.name);
     }
-  }, [currentUser]);
+  }, [addUser, currentUser?.id, currentUser.name, isShowGetUser, votersList]);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setIsShowGetUser(true);
+    }
+  }, [currentUser, setIsShowGetUser]);
 
   useEffect(() => {
     const roomRef = doc(firestoreDB, "rooms", roomId as string);
@@ -49,7 +64,7 @@ function PokerGame({ roomId }: Props) {
           id: player.id,
         } as UserData);
       });
-      setPlayersList(tempPlayersList);
+      setVotersList(tempPlayersList);
     });
     return () => {
       unSubRooms();
@@ -60,9 +75,8 @@ function PokerGame({ roomId }: Props) {
   }, []);
 
   const handleAddUser = (name: string) => {
-    console.log("click");
+    console.log("add user");
     addUser(name);
-    setIsShowGetUser(false);
   };
 
   return (
@@ -76,11 +90,12 @@ function PokerGame({ roomId }: Props) {
             title="Enter Name"
             placeholder="Name"
             buttonCopy="Go"
+            isLoading={isAddUserLoading}
             onSubmit={(name: string) => handleAddUser(name)}
           />
         </Box>
       )}
-      {roomData && !isShowGetUser && (
+      {roomData && currentUser && !isShowGetUser && (
         <>
           <Heading
             textAlign="center"
@@ -92,8 +107,7 @@ function PokerGame({ roomId }: Props) {
           <PokerBoard
             roomId={roomId}
             roomData={roomData as Room}
-            voteData={playersList as UserData[]}
-            votesLoading={roomData.isVoting}
+            voteData={votersList as UserData[]}
             currentUser={currentUser}
           />
         </>

@@ -1,74 +1,47 @@
 import { Box, Container, Flex, Text, Wrap, WrapItem } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { Room, UserData } from "../../utils/types";
-import { useAddVoter, useResetAllVotes } from "../../hooks";
+import {
+  useAddVoter,
+  useResetAllVotes,
+  useUpdateVoteStatus,
+} from "../../hooks";
 
 import Card from "../Card";
 import SettingsMenu from "../SettingsMenu";
 import User from "../User";
 import ToolBar from "../ToolBar";
+import useUpdateVote from "../../hooks/useUpdateVote";
 
 type Props = {
   roomData: Room;
   roomId: string;
   voteData: UserData[];
-  votesLoading: boolean;
   currentUser: UserData;
 };
 
-const PokerBoard = ({
-  roomData,
-  roomId,
-  voteData,
-  votesLoading,
-  currentUser,
-}: Props) => {
+const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const isBrowser = typeof window !== "undefined";
 
-  const { addNewVoter, addVoterByUserData } = useAddVoter();
   const resetAllVotes = useResetAllVotes(voteData, roomId);
 
   const options = [1, 2, 3, 5, 8, 13, 21, 34, 55, 99];
+  const { mutate: updateUserVote } = useUpdateVote();
 
   const handleUpdateVote = (vote: number) => {
-    // if (currentUser) {
-    //   setCurrentUser({ ...currentUser!, vote });
-    //   // updateVote(currentUser, { vote });
-    // }
+    updateUserVote({ roomId, userId: currentUser.id, vote });
   };
 
+  const { mutate: updateVoteStatus } = useUpdateVoteStatus();
+
   const handleShow = () => {
-    // updateRoomData({
-    //   isVoting: !roomData.isVoting,
-    // });
+    updateVoteStatus({ roomId, isVoting: !roomData.isVoting });
   };
 
   const handleResetAllVotes = () => {
     resetAllVotes();
-    // updateRoomData({
-    //   isVoting: true,
-    // });
+    updateVoteStatus({ roomId, isVoting: true });
   };
-
-  // Set currentUser from localStorage
-  // useEffect(() => {
-  //   if (isBrowser) {
-  //     const fromLocalStorage = window.localStorage.getItem("agile-poker");
-  //     setCurrentUser(fromLocalStorage && JSON.parse(fromLocalStorage));
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // Add user to firebase if currentUser is not in voterData
-  useEffect(() => {
-    const isUserInVoteData = !!voteData?.find(
-      (user) => user?.id === currentUser?.id
-    );
-    if (!isUserInVoteData && currentUser) {
-      addVoterByUserData(currentUser, roomId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
 
   return (
     <Container
@@ -82,15 +55,13 @@ const PokerBoard = ({
       boxShadow="xl"
       backgroundColor={roomData.isVoting ? "gray.50" : "#fafafa"}
     >
-      {currentUser && (
-        <ToolBar
-          roomData={roomData}
-          handleResetAllVotes={handleResetAllVotes}
-          handleShow={handleShow}
-        />
-      )}
-      {currentUser && (
+      {voteData && (
         <>
+          <ToolBar
+            roomData={roomData}
+            handleResetAllVotes={handleResetAllVotes}
+            handleShow={handleShow}
+          />
           <Flex
             minH="43vh"
             w="100%"
@@ -100,18 +71,16 @@ const PokerBoard = ({
             padding="5"
           >
             <Wrap spacing="10px" justify="center">
-              {votesLoading && <>...loading</>}
-              {!votesLoading &&
-                voteData?.map((user) => (
-                  <WrapItem key={user?.id}>
-                    <User
-                      isVoting={roomData.isVoting}
-                      name={user?.name}
-                      vote={user?.vote}
-                      isCurrentUser={user?.id === currentUser.id}
-                    />
-                  </WrapItem>
-                ))}
+              {voteData?.map((user) => (
+                <WrapItem key={user?.id}>
+                  <User
+                    isVoting={roomData.isVoting}
+                    name={user?.name}
+                    vote={user?.vote}
+                    isCurrentUser={user?.id === currentUser?.id}
+                  />
+                </WrapItem>
+              ))}
             </Wrap>
           </Flex>
           <Wrap direction="row" spacing="10px" justify="center">
