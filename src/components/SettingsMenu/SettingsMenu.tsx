@@ -5,12 +5,13 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Icon,
 } from "@chakra-ui/react";
 import { useDeleteVoters } from "../../hooks";
+import { AiOutlineSetting } from "react-icons/ai";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { UserData } from "../../utils/types";
-import { doc } from "firebase/firestore";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
 
@@ -43,7 +44,7 @@ const SettingsMenu = ({ roomId, voteData }: Props) => {
       <Menu>
         <MenuButton
           as={Button}
-          rightIcon={"⚙️"}
+          rightIcon={<Icon as={AiOutlineSetting} h={6} w={6} />}
           colorScheme="twitter"
           variant="outline"
         >
