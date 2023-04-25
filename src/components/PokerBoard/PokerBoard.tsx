@@ -1,12 +1,7 @@
-import { Box, Container, Flex, Text, Wrap, WrapItem } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import { Container, Flex, Wrap, WrapItem } from "@chakra-ui/react";
+import React from "react";
 import { Room, UserData } from "../../utils/types";
-import {
-  useAddVoter,
-  useResetAllVotes,
-  useUpdateVoteStatus,
-} from "../../hooks";
-
+import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
 import SettingsMenu from "../SettingsMenu";
 import User from "../User";

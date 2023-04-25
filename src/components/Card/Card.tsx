@@ -1,12 +1,12 @@
-import { Box, Button, Center, Text } from "@chakra-ui/react"
+import { Box, Button, Center, Text } from "@chakra-ui/react";
 
-import React from "react"
+import React from "react";
 
 type Props = {
-  number: number
-  isVoting: boolean
-  select: (value: number) => void
-}
+  number: number;
+  isVoting: boolean;
+  select: (value: number) => void;
+};
 
 const Card = ({ number, isVoting, select }: Props) => {
   return (
@@ -21,11 +21,11 @@ const Card = ({ number, isVoting, select }: Props) => {
         onClick={() => select(number)}
       >
         <Text fontSize="4xl" fontWeight="medium" color="black">
-          {number}{" "}
+          {number}
         </Text>
       </Button>
     </>
-  )
-}
+  );
+};
 
-export default Card
+export default Card;

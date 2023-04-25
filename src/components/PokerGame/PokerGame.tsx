@@ -1,4 +1,11 @@
-import { Box, Button, Heading, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  SlideFade,
+  Text,
+} from "@chakra-ui/react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import useAddUser from "../../hooks/useAddUser";
@@ -33,21 +40,25 @@ function PokerGame({ roomId }: Props) {
     },
   });
 
+  // Get User name
   useEffect(() => {
-    const isCurrentUserInRoom = !!votersList?.find(
-      (voter) => voter.id === currentUser?.id
-    );
-    if (!isCurrentUserInRoom && !isShowGetUser) {
-      addUser(currentUser.name);
-    }
-  }, [addUser, currentUser?.id, currentUser.name, isShowGetUser, votersList]);
-
-  useEffect(() => {
-    if (!currentUser) {
+    if (currentUser === "initial") {
       setIsShowGetUser(true);
     }
   }, [currentUser, setIsShowGetUser]);
 
+  // Add user to room
+  useEffect(() => {
+    const hasUserData = currentUser !== "initial";
+    const isCurrentUserInRoom = !!votersList?.find(
+      (voter) => voter.id === currentUser?.id
+    );
+    if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
+      addUser(currentUser.name);
+    }
+  }, [addUser, currentUser?.id, currentUser.name, isShowGetUser, votersList]);
+
+  // Subscribe to firebase
   useEffect(() => {
     const roomRef = doc(firestoreDB, "rooms", roomId as string);
     const playersRef = collection(firestoreDB, `rooms/${roomId}/votes`);
@@ -82,21 +93,23 @@ function PokerGame({ roomId }: Props) {
   return (
     <div>
       {isShowGetUser && (
-        <Box padding="2">
-          <Text as="h2" textAlign="center" fontSize="xl" fontWeight="bold">
-            Username to show on the board
-          </Text>
-          <BasicForm
-            title="Enter Name"
-            placeholder="Name"
-            buttonCopy="Go"
-            isLoading={isAddUserLoading}
-            onSubmit={(name: string) => handleAddUser(name)}
-          />
-        </Box>
+        <SlideFade in={isShowGetUser} offsetY="100px">
+          <Container padding="2">
+            <Text as="h2" textAlign="center" fontSize="xl" fontWeight="light">
+              Provide your name
+            </Text>
+            <BasicForm
+              title="Display name"
+              placeholder="Name"
+              buttonCopy="Go"
+              isLoading={isAddUserLoading}
+              onSubmit={(name: string) => handleAddUser(name)}
+            />
+          </Container>
+        </SlideFade>
       )}
       {roomData && currentUser && !isShowGetUser && (
-        <>
+        <SlideFade in={!isShowGetUser} offsetY="50px">
           <Heading
             textAlign="center"
             marginBottom={2}
@@ -110,7 +123,7 @@ function PokerGame({ roomId }: Props) {
             voteData={votersList as UserData[]}
             currentUser={currentUser}
           />
-        </>
+        </SlideFade>
       )}
     </div>
   );

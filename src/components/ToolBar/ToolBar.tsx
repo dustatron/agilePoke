@@ -33,7 +33,12 @@ const ToolBar = ({
           </Text>
         </Box>
       )}
-      <Stack direction="row" paddingTop="20px" justifyContent="start">
+      <Stack
+        direction="row"
+        paddingTop="20px"
+        justifyContent="center"
+        spacing="20"
+      >
         <Button
           colorScheme={roomData.isVoting ? "green" : "blue"}
           padding="5px 30px"
@@ -46,7 +51,12 @@ const ToolBar = ({
           />
           {roomData.isVoting ? "Show" : "Hide"}
         </Button>
-        <Button onClick={handleResetAllVotes} padding="3" variant="outline">
+        <Button
+          onClick={handleResetAllVotes}
+          padding="3"
+          variant="outline"
+          colorScheme="red"
+        >
           Reset Vote
           <Icon as={GrPowerReset} marginLeft={2} />
         </Button>
