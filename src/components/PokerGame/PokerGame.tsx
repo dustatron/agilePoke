@@ -56,7 +56,14 @@ function PokerGame({ roomId }: Props) {
     if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
       addUser(currentUser.name);
     }
-  }, [addUser, currentUser?.id, currentUser.name, isShowGetUser, votersList]);
+  }, [
+    addUser,
+    currentUser,
+    currentUser?.id,
+    currentUser.name,
+    isShowGetUser,
+    votersList,
+  ]);
 
   // Subscribe to firebase
   useEffect(() => {

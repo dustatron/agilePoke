@@ -1,13 +1,15 @@
-import { Box, Button, Stack, Text, Icon } from "@chakra-ui/react";
-import React from "react";
+import { Box, Button, Stack, Text, Icon, Progress } from "@chakra-ui/react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Room, UserData } from "../../utils/types";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { GrPowerReset } from "react-icons/gr";
+import ProgressBar from "./ProgressBar";
 
 type ToolBarProps = {
   roomData: Room;
   handleShow: () => void;
   handleResetAllVotes: () => void;
+  isAutoReset: boolean;
   playersList?: UserData[];
 };
 
@@ -15,6 +17,7 @@ const ToolBar = ({
   roomData,
   handleShow,
   handleResetAllVotes,
+  isAutoReset,
 }: ToolBarProps) => {
   return (
     <>
@@ -31,6 +34,7 @@ const ToolBar = ({
           <Text as="h3" fontWeight={600} fontSize={20}>
             Showing
           </Text>
+          {isAutoReset && <ProgressBar />}
         </Box>
       )}
       <Stack
@@ -57,7 +61,7 @@ const ToolBar = ({
           variant="outline"
           colorScheme="red"
         >
-          Reset Vote
+          <Text>{isAutoReset ? "Auto Reset" : " Reset Vote"}</Text>
           <Icon as={GrPowerReset} marginLeft={2} />
         </Button>
       </Stack>

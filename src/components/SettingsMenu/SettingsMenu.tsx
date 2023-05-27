@@ -6,6 +6,7 @@ import {
   MenuItem,
   MenuList,
   Icon,
+  Badge,
 } from "@chakra-ui/react";
 import { useDeleteVoters } from "../../hooks";
 import { AiOutlineSetting } from "react-icons/ai";
@@ -14,13 +15,21 @@ import React from "react";
 import { UserData } from "../../utils/types";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
+import ResetTimeModal from "./ResetTimeModal";
 
 type Props = {
   roomId: string;
   voteData: UserData[];
+  toggleAutoReset: () => void;
+  isAutoResetOn: boolean;
 };
 
-const SettingsMenu = ({ roomId, voteData }: Props) => {
+const SettingsMenu = ({
+  roomId,
+  voteData,
+  toggleAutoReset,
+  isAutoResetOn,
+}: Props) => {
   const { setIsShowingAddUser } = useAlertStore((store) => ({
     setIsShowingAddUser: store.setIsShowingAddUser,
   }));
@@ -53,6 +62,13 @@ const SettingsMenu = ({ roomId, voteData }: Props) => {
         <MenuList>
           <MenuItem onClick={handleResetAllUsers}>Refresh users</MenuItem>
           <MenuItem onClick={handleResetUser}>Reset your name</MenuItem>
+          <MenuItem onClick={toggleAutoReset}>
+            Auto reset
+            <Badge ml="4" colorScheme={isAutoResetOn ? "green" : "gray"}>
+              {isAutoResetOn ? "ON" : "OFF"}
+            </Badge>
+          </MenuItem>
+          <ResetTimeModal />
         </MenuList>
       </Menu>
     </Box>
