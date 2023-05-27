@@ -36,8 +36,6 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const timeout = useTimeoutState((state) => state.timeout);
   const timerRef = useRef<string | number | NodeJS.Timeout | undefined>();
 
-  console.log("timeout", timeout);
-
   useHotkeys("shift+1", () => handleUpdateVote(1));
   useHotkeys("shift+2", () => handleUpdateVote(2));
   useHotkeys("shift+3", () => handleUpdateVote(3));
