@@ -1,6 +1,5 @@
 import { Container, Flex, Stack, Wrap, WrapItem } from "@chakra-ui/react";
-import React, { useState } from "react";
-import { OPTIONS } from "../../utils/constants";
+import React, { useEffect, useRef, useState } from "react";
 import { Room, UserData } from "../../utils/types";
 import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
@@ -10,7 +9,20 @@ import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
 import { useHotkeys } from "react-hotkeys-hook";
 import HotkeysModal from "../HotkeysModal/HotkeysModal";
-import useTimeoutState from "../../hooks/useTimeoutState";
+import { create } from "zustand";
+import { OPTIONS } from "../../utils/constants";
+
+type State = {
+  timeout: number;
+};
+type Action = {
+  setTimeout: (value: number) => void;
+};
+
+export const useTimeoutState = create<State & Action>((set) => ({
+  timeout: 3,
+  setTimeout: (timeout: number) => set({ timeout }),
+}));
 
 type Props = {
   roomData: Room;
@@ -20,8 +32,11 @@ type Props = {
 };
 
 const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
-  const [isAutoResetOn, setIsAutoResetOn] = useState(false);
+  const [isAutoResetOn, setIsAutoResetOn] = useState(true);
   const timeout = useTimeoutState((state) => state.timeout);
+  const timerRef = useRef<string | number | NodeJS.Timeout | undefined>();
+
+  console.log("timeout", timeout);
 
   useHotkeys("shift+1", () => handleUpdateVote(1));
   useHotkeys("shift+2", () => handleUpdateVote(2));
@@ -32,7 +47,6 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   useHotkeys("esc", () => handleResetAllVotes());
 
   const resetAllVotes = useResetAllVotes(voteData, roomId);
-
   const { mutate: updateUserVote } = useUpdateVote();
 
   const handleUpdateVote = (vote: number) => {
@@ -53,6 +67,18 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const handleAutoReset = () => {
     setIsAutoResetOn(!isAutoResetOn);
   };
+
+  useEffect(() => {
+    if (!roomData.isVoting && isAutoResetOn) {
+      timerRef.current = setTimeout(() => {
+        handleShow();
+        resetAllVotes();
+      }, timeout * 60000);
+    }
+    return () => clearInterval(timerRef.current);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAutoResetOn, roomData.isVoting]);
 
   return (
     <Container
