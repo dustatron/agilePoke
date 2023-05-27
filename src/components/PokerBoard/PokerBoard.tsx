@@ -1,5 +1,6 @@
-import { Container, Flex, Wrap, WrapItem } from "@chakra-ui/react";
-import React from "react";
+import { Container, Flex, Stack, Wrap, WrapItem } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { OPTIONS } from "../../utils/constants";
 import { Room, UserData } from "../../utils/types";
 import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
@@ -7,6 +8,9 @@ import SettingsMenu from "../SettingsMenu";
 import User from "../User";
 import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
+import { useHotkeys } from "react-hotkeys-hook";
+import HotkeysModal from "../HotkeysModal/HotkeysModal";
+import useTimeoutState from "../../hooks/useTimeoutState";
 
 type Props = {
   roomData: Room;
@@ -16,11 +20,19 @@ type Props = {
 };
 
 const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
-  const isBrowser = typeof window !== "undefined";
+  const [isAutoResetOn, setIsAutoResetOn] = useState(false);
+  const timeout = useTimeoutState((state) => state.timeout);
+
+  useHotkeys("shift+1", () => handleUpdateVote(1));
+  useHotkeys("shift+2", () => handleUpdateVote(2));
+  useHotkeys("shift+3", () => handleUpdateVote(3));
+  useHotkeys("shift+5", () => handleUpdateVote(5));
+  useHotkeys("shift+8", () => handleUpdateVote(8));
+  useHotkeys("shift+s", () => handleShow());
+  useHotkeys("esc", () => handleResetAllVotes());
 
   const resetAllVotes = useResetAllVotes(voteData, roomId);
 
-  const options = [1, 2, 3, 5, 8, 13, 21, 34, 55, 99];
   const { mutate: updateUserVote } = useUpdateVote();
 
   const handleUpdateVote = (vote: number) => {
@@ -36,6 +48,10 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const handleResetAllVotes = () => {
     resetAllVotes();
     updateVoteStatus({ roomId, isVoting: true });
+  };
+
+  const handleAutoReset = () => {
+    setIsAutoResetOn(!isAutoResetOn);
   };
 
   return (
@@ -56,6 +72,7 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
             roomData={roomData}
             handleResetAllVotes={handleResetAllVotes}
             handleShow={handleShow}
+            isAutoReset={isAutoResetOn}
           />
           <Flex
             minH="43vh"
@@ -79,7 +96,7 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
             </Wrap>
           </Flex>
           <Wrap direction="row" spacing="10px" justify="center">
-            {options.map((num) => (
+            {OPTIONS.map((num) => (
               <WrapItem key={num}>
                 <Card
                   number={num}
@@ -89,8 +106,17 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
               </WrapItem>
             ))}
           </Wrap>
-
-          {currentUser && <SettingsMenu roomId={roomId} voteData={voteData} />}
+          <Stack direction="row" p="5" justifyContent="end">
+            <HotkeysModal />
+            {currentUser && (
+              <SettingsMenu
+                roomId={roomId}
+                voteData={voteData}
+                toggleAutoReset={handleAutoReset}
+                isAutoResetOn={isAutoResetOn}
+              />
+            )}
+          </Stack>
         </>
       )}
     </Container>
