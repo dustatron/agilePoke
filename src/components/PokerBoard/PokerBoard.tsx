@@ -53,23 +53,18 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const handleAutoReset = () => {
     setIsAutoResetOn(!isAutoResetOn);
   };
-  console.log("timerState", timeout);
-  const delay = timeout * 60000;
 
   useEffect(() => {
+    const delay = timeout * 60000;
     if (!roomData.isVoting && isAutoResetOn) {
-      console.log("go");
-      console.log("time", delay);
       timeoutRef.current = setTimeout(() => {
-        console.log("time");
         handleShow();
         resetAllVotes();
       }, delay);
     }
     return () => clearInterval(timeoutRef.current);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAutoResetOn, roomData.isVoting, delay]);
+  }, [isAutoResetOn, roomData.isVoting, timeout]);
 
   return (
     <Container
