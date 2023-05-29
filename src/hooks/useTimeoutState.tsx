@@ -1,8 +1,6 @@
 import React from "react";
 import { create } from "zustand";
 
-type Props = {};
-
 type State = {
   timeout: number;
 };
