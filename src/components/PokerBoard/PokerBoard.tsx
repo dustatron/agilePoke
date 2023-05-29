@@ -9,20 +9,8 @@ import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
 import { useHotkeys } from "react-hotkeys-hook";
 import HotkeysModal from "../HotkeysModal/HotkeysModal";
-import { create } from "zustand";
 import { OPTIONS } from "../../utils/constants";
-
-type State = {
-  timeout: number;
-};
-type Action = {
-  setTimeout: (value: number) => void;
-};
-
-export const useTimeoutState = create<State & Action>((set) => ({
-  timeout: 3,
-  setTimeout: (timeout: number) => set({ timeout }),
-}));
+import useTimeoutState from "../../hooks/useTimeoutState";
 
 type Props = {
   roomData: Room;
@@ -32,9 +20,9 @@ type Props = {
 };
 
 const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
-  const [isAutoResetOn, setIsAutoResetOn] = useState(true);
+  const [isAutoResetOn, setIsAutoResetOn] = useState(false);
   const timeout = useTimeoutState((state) => state.timeout);
-  const timerRef = useRef<string | number | NodeJS.Timeout | undefined>();
+  const timeoutRef = useRef<string | number | NodeJS.Timeout | undefined>();
 
   useHotkeys("shift+1", () => handleUpdateVote(1));
   useHotkeys("shift+2", () => handleUpdateVote(2));
@@ -67,16 +55,16 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   };
 
   useEffect(() => {
+    const delay = timeout * 60000;
     if (!roomData.isVoting && isAutoResetOn) {
-      timerRef.current = setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         handleShow();
         resetAllVotes();
-      }, timeout * 60000);
+      }, delay);
     }
-    return () => clearInterval(timerRef.current);
-
+    return () => clearInterval(timeoutRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAutoResetOn, roomData.isVoting]);
+  }, [isAutoResetOn, roomData.isVoting, timeout]);
 
   return (
     <Container

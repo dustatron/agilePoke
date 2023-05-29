@@ -93,7 +93,6 @@ function PokerGame({ roomId }: Props) {
   }, []);
 
   const handleAddUser = (name: string) => {
-    console.log("add user");
     addUser(name);
   };
 
