@@ -64,13 +64,6 @@ const SettingsMenu = ({
           <MenuItem onClick={handleResetAllUsers}>Refresh users</MenuItem>
           <MenuItem onClick={handleResetUser}>Reset your name</MenuItem>
           <HotkeysModal />
-          {/* <MenuItem onClick={toggleAutoReset}>
-            Auto reset
-            <Badge ml="4" colorScheme={isAutoResetOn ? "green" : "gray"}>
-              {isAutoResetOn ? "ON" : "OFF"}
-            </Badge>
-          </MenuItem>
-          <ResetTimeModal /> */}
         </MenuList>
       </Menu>
     </Box>
