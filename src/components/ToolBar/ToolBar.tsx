@@ -1,23 +1,29 @@
-import { Box, Button, Stack, Text, Icon, Progress } from "@chakra-ui/react";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { Box, Stack, Text } from "@chakra-ui/react";
+import React from "react";
 import { Room, UserData } from "../../utils/types";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { GrPowerReset } from "react-icons/gr";
+
 import ProgressBar from "./ProgressBar";
+import HotkeysModal from "../HotkeysModal";
+import SettingsMenu from "../SettingsMenu";
 
 type ToolBarProps = {
   roomData: Room;
-  handleShow: () => void;
-  handleResetAllVotes: () => void;
   isAutoReset: boolean;
-  playersList?: UserData[];
+  currentUser: UserData;
+  roomId: string;
+  voteData: UserData[];
+  handleAutoReset: () => void;
+  isAutoResetOn: boolean;
 };
 
 const ToolBar = ({
   roomData,
-  handleShow,
-  handleResetAllVotes,
   isAutoReset,
+  currentUser,
+  roomId,
+  voteData,
+  handleAutoReset,
+  isAutoResetOn,
 }: ToolBarProps) => {
   return (
     <>
@@ -37,33 +43,15 @@ const ToolBar = ({
           {isAutoReset && <ProgressBar />}
         </Box>
       )}
-      <Stack
-        direction="row"
-        paddingTop="20px"
-        justifyContent="center"
-        spacing="20"
-      >
-        <Button
-          colorScheme={roomData.isVoting ? "green" : "blue"}
-          padding="5px 30px"
-          onClick={handleShow}
-          variant="outline"
-        >
-          <Icon
-            as={roomData.isVoting ? AiOutlineEye : AiOutlineEyeInvisible}
-            marginRight={2}
+      <Stack direction="row" paddingTop="20px" justifyContent="end">
+        {currentUser && (
+          <SettingsMenu
+            roomId={roomId}
+            voteData={voteData}
+            toggleAutoReset={handleAutoReset}
+            isAutoResetOn={isAutoResetOn}
           />
-          {roomData.isVoting ? "Show" : "Hide"}
-        </Button>
-        <Button
-          onClick={handleResetAllVotes}
-          padding="3"
-          variant="outline"
-          colorScheme="red"
-        >
-          <Text>{isAutoReset ? "Auto Reset" : " Reset Vote"}</Text>
-          <Icon as={GrPowerReset} marginLeft={2} />
-        </Button>
+        )}
       </Stack>
     </>
   );

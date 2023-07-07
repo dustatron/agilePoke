@@ -17,6 +17,7 @@ import {
   Td,
   TableCaption,
   TableContainer,
+  MenuItem,
 } from "@chakra-ui/react";
 import React from "react";
 
@@ -26,9 +27,7 @@ function HotkeysModal({}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button colorScheme="twitter" onClick={onOpen}>
-        Hotkeys
-      </Button>
+      <MenuItem onClick={onOpen}>Hot Keys</MenuItem>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

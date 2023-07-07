@@ -1,9 +1,17 @@
-import { Container, Flex, Stack, Wrap, WrapItem } from "@chakra-ui/react";
+import {
+  Button,
+  Container,
+  Flex,
+  Icon,
+  Stack,
+  Wrap,
+  WrapItem,
+  Text,
+} from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { Room, UserData } from "../../utils/types";
 import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
-import SettingsMenu from "../SettingsMenu";
 import User from "../User";
 import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
@@ -11,6 +19,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 import HotkeysModal from "../HotkeysModal/HotkeysModal";
 import { OPTIONS } from "../../utils/constants";
 import useTimeoutState from "../../hooks/useTimeoutState";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { GrPowerReset } from "react-icons/gr";
 
 type Props = {
   roomData: Room;
@@ -82,9 +92,12 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
         <>
           <ToolBar
             roomData={roomData}
-            handleResetAllVotes={handleResetAllVotes}
-            handleShow={handleShow}
             isAutoReset={isAutoResetOn}
+            roomId={roomId}
+            voteData={voteData}
+            handleAutoReset={handleAutoReset}
+            isAutoResetOn={isAutoResetOn}
+            currentUser={currentUser}
           />
           <Flex
             minH="43vh"
@@ -118,16 +131,27 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
               </WrapItem>
             ))}
           </Wrap>
-          <Stack direction="row" p="5" justifyContent="end">
-            <HotkeysModal />
-            {currentUser && (
-              <SettingsMenu
-                roomId={roomId}
-                voteData={voteData}
-                toggleAutoReset={handleAutoReset}
-                isAutoResetOn={isAutoResetOn}
+          <Stack direction="row" p="5" justifyContent="space-between">
+            <Button
+              onClick={handleResetAllVotes}
+              padding="3"
+              variant="outline"
+              colorScheme="red"
+            >
+              <Text>{isAutoResetOn ? "Auto Reset" : " Reset Vote"}</Text>
+              <Icon as={GrPowerReset} marginLeft={2} />
+            </Button>
+            <Button
+              colorScheme={roomData.isVoting ? "green" : "blue"}
+              padding="5px 30px"
+              onClick={handleShow}
+            >
+              <Icon
+                as={roomData.isVoting ? AiOutlineEye : AiOutlineEyeInvisible}
+                marginRight={2}
               />
-            )}
+              {roomData.isVoting ? "Show" : "Hide"}
+            </Button>
           </Stack>
         </>
       )}
