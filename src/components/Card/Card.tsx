@@ -4,11 +4,10 @@ import React from "react";
 
 type Props = {
   number: number;
-  isVoting: boolean;
   select: (value: number) => void;
 };
 
-const Card = ({ number, isVoting, select }: Props) => {
+const Card = ({ number, select }: Props) => {
   return (
     <>
       <Button

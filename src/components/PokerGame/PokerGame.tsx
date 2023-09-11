@@ -50,6 +50,7 @@ function PokerGame({ roomId }: Props) {
   // Add user to room
   useEffect(() => {
     const hasUserData = currentUser !== "initial";
+
     const isCurrentUserInRoom = !!votersList?.find(
       (voter) => voter.id === currentUser?.id
     );

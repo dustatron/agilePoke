@@ -21,6 +21,7 @@ import { OPTIONS } from "../../utils/constants";
 import useTimeoutState from "../../hooks/useTimeoutState";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { GrPowerReset } from "react-icons/gr";
+import VoteCards from "../VoteCards";
 
 type Props = {
   roomData: Room;
@@ -107,27 +108,16 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
             alignContent="space-between"
             padding="5"
           >
-            <Wrap spacing="10px" justify="center">
-              {voteData?.map((user) => (
-                <WrapItem key={user?.id}>
-                  <User
-                    isVoting={roomData.isVoting}
-                    name={user?.name}
-                    vote={user?.vote}
-                    isCurrentUser={user?.id === currentUser?.id}
-                  />
-                </WrapItem>
-              ))}
-            </Wrap>
+            <VoteCards
+              currentUser={currentUser}
+              roomData={roomData}
+              voteData={voteData}
+            />
           </Flex>
           <Wrap direction="row" spacing="10px" justify="center">
             {OPTIONS.map((num) => (
               <WrapItem key={num}>
-                <Card
-                  number={num}
-                  isVoting={roomData.isVoting}
-                  select={handleUpdateVote}
-                />
+                <Card number={num} select={handleUpdateVote} />
               </WrapItem>
             ))}
           </Wrap>
