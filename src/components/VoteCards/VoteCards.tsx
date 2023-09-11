@@ -1,4 +1,12 @@
-import { Box, Center, Stack, Wrap, WrapItem, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Center,
+  Stack,
+  Wrap,
+  WrapItem,
+  Text,
+  Badge,
+} from "@chakra-ui/react";
 import React from "react";
 import User from "../User";
 import { Room, UserData } from "../../utils/types";
@@ -35,8 +43,8 @@ const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
       {!isVoting && (
         <>
           <Stack direction="row" spacing="20" justify="center">
-            {sorted.map((item) => (
-              <Stack direction="row" key={item[0]} spacing={0}>
+            {sorted.map((item, index) => (
+              <Stack direction="row" key={item[0]} spacing={"-10"}>
                 {item[1].users.map((user: any) => (
                   <WrapItem key={user?.id}>
                     <User
@@ -50,21 +58,46 @@ const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
               </Stack>
             ))}
           </Stack>
-          <Center>
+          {/* <Center>
             <Text fontWeight="extrabold" fontSize="xl" display="inline" ml="4">
-              Stats:{" "}
+              Stats:
             </Text>
             {sorted.map((item) => (
-              <Box key={item[0]} p="1">
-                <Text fontWeight="extrabold" fontSize="xl" display="inline">
+              <Box
+                key={item[0]}
+                display="flex"
+                flexWrap="wrap"
+                border="1px"
+                borderColor="gray.400"
+                borderRadius="md"
+                py="1"
+                px="2"
+                mx="1"
+              >
+                <Text
+                  display="block"
+                  fontWeight="extrabold"
+                  fontSize="xl"
+                  mx="1"
+                >
                   {item[0]}
                 </Text>
-                <Text display="inline" fontSize="xl" fontWeight="medium">
-                  [{item[1].count}]
-                </Text>
+                <Box
+                  display="block"
+                  fontSize="sm"
+                  fontWeight="medium"
+                  backgroundColor="gray.200"
+                  borderRadius="lg"
+                  height="20%"
+                  alignItems="center"
+                  px="2"
+                  color="gray.900"
+                >
+                  {item[1].count}
+                </Box>
               </Box>
             ))}
-          </Center>
+          </Center> */}
         </>
       )}
     </Stack>
