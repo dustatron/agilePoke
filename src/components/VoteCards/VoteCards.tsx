@@ -1,11 +1,7 @@
 import {
-  Box,
-  Center,
   Stack,
   Wrap,
   WrapItem,
-  Text,
-  Badge,
 } from "@chakra-ui/react";
 import React from "react";
 import User from "../User";
@@ -43,7 +39,7 @@ const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
       {!isVoting && (
         <>
           <Stack direction="row" spacing="20" justify="center">
-            {sorted.map((item, index) => (
+            {sorted.map((item) => (
               <Stack direction="row" key={item[0]} spacing={"-10"}>
                 {item[1].users.map((user: any) => (
                   <WrapItem key={user?.id}>

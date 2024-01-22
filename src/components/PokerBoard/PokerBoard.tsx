@@ -12,11 +12,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { Room, UserData } from "../../utils/types";
 import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
-import User from "../User";
 import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
 import { useHotkeys } from "react-hotkeys-hook";
-import HotkeysModal from "../HotkeysModal/HotkeysModal";
 import { OPTIONS } from "../../utils/constants";
 import useTimeoutState from "../../hooks/useTimeoutState";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
@@ -114,6 +112,7 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
               voteData={voteData}
             />
           </Flex>
+          {/* \\\\\\\\\ Voting Card /////////   */}
           <Wrap direction="row" spacing="10px" justify="center">
             {OPTIONS.map((num) => (
               <WrapItem key={num}>

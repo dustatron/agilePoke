@@ -21,7 +21,7 @@ type Props = { roomId: string };
 function PokerGame({ roomId }: Props) {
   const [currentUser, setCurrentUser] = useLocalStorage(
     LocalStorageKeys.User,
-    "initial"
+    "initial",
   );
   const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
@@ -52,7 +52,7 @@ function PokerGame({ roomId }: Props) {
     const hasUserData = currentUser !== "initial";
 
     const isCurrentUserInRoom = !!votersList?.find(
-      (voter) => voter.id === currentUser?.id
+      (voter) => voter.id === currentUser?.id,
     );
     if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
       addUser(currentUser.name);

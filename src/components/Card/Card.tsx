@@ -11,15 +11,15 @@ const Card = ({ number, select }: Props) => {
   return (
     <>
       <Button
-        minW="70px"
-        minH="85px"
+        minW="60px"
+        minH="80px"
         bg="gray.100"
         borderRadius="md"
         borderWidth="2px"
         borderColor="gray.200"
         onClick={() => select(number)}
       >
-        <Text fontSize="4xl" fontWeight="medium" color="black">
+        <Text fontSize="2xl" fontWeight="medium" color="black">
           {number}
         </Text>
       </Button>
