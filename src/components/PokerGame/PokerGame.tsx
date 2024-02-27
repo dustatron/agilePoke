@@ -1,9 +1,11 @@
 import {
   Box,
   Button,
+  Center,
   Container,
   Heading,
   SlideFade,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
@@ -21,7 +23,7 @@ type Props = { roomId: string };
 function PokerGame({ roomId }: Props) {
   const [currentUser, setCurrentUser] = useLocalStorage(
     LocalStorageKeys.User,
-    "initial",
+    "initial"
   );
   const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
@@ -52,7 +54,7 @@ function PokerGame({ roomId }: Props) {
     const hasUserData = currentUser !== "initial";
 
     const isCurrentUserInRoom = !!votersList?.find(
-      (voter) => voter.id === currentUser?.id,
+      (voter) => voter.id === currentUser?.id
     );
     if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
       addUser(currentUser.name);
@@ -94,11 +96,14 @@ function PokerGame({ roomId }: Props) {
   }, []);
 
   const handleAddUser = (name: string) => {
-    addUser(name);
+    if (name.length > 10) {
+    } else {
+      addUser(name);
+    }
   };
 
   return (
-    <div>
+    <Box p="0">
       {isShowGetUser && (
         <SlideFade in={isShowGetUser} offsetY="100px">
           <Container padding="2">
@@ -117,22 +122,40 @@ function PokerGame({ roomId }: Props) {
       )}
       {roomData && currentUser && !isShowGetUser && (
         <SlideFade in={!isShowGetUser} offsetY="50px">
-          <Heading
-            textAlign="center"
-            marginBottom={2}
-            textTransform="capitalize"
-          >
-            {roomData.name.toLowerCase()} Room
-          </Heading>
-          <PokerBoard
-            roomId={roomId}
-            roomData={roomData as Room}
-            voteData={votersList as UserData[]}
-            currentUser={currentUser}
-          />
+          <Center>
+            <Stack
+              justifyContent="center"
+              alignItems="center"
+              backgroundColor="blackAlpha.900"
+              p="4"
+              w={{ sm: "100%", md: "100%", lg: "75%" }}
+              rounded="md"
+              spacing="0"
+            >
+              <Heading
+                textAlign="center"
+                marginBottom={2}
+                textTransform="capitalize"
+                background="whiteAlpha.200"
+                color="white"
+                width="98%"
+                p="2"
+                mb="1"
+                rounded="md"
+              >
+                {roomData.name.toLowerCase()} Room
+              </Heading>
+              <PokerBoard
+                roomId={roomId}
+                roomData={roomData as Room}
+                voteData={votersList as UserData[]}
+                currentUser={currentUser}
+              />
+            </Stack>
+          </Center>
         </SlideFade>
       )}
-    </div>
+    </Box>
   );
 }
 

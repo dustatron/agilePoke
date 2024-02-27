@@ -7,6 +7,7 @@ import {
   Wrap,
   WrapItem,
   Text,
+  Box,
 } from "@chakra-ui/react";
 import React, { useEffect, useRef, useState } from "react";
 import { Room, UserData } from "../../utils/types";
@@ -76,14 +77,13 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   }, [isAutoResetOn, roomData.isVoting, timeout]);
 
   return (
-    <Container
-      size="2xl"
-      maxW={["2xl", "4xl"]}
+    <Box
       bg="white"
+      w="100%"
       border="1px"
       borderColor="#d4d4d4"
       padding="5"
-      borderRadius="xl"
+      borderRadius="md"
       boxShadow="xl"
       backgroundColor={roomData.isVoting ? "gray.50" : "#fafafa"}
     >
@@ -127,8 +127,8 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
               variant="outline"
               colorScheme="red"
             >
-              <Text>{isAutoResetOn ? "Auto Reset" : " Reset Vote"}</Text>
-              <Icon as={GrPowerReset} marginLeft={2} />
+              <Text>{"Reset"}</Text>
+              <Icon as={GrPowerReset} marginLeft={2} color="red.300" />
             </Button>
             <Button
               colorScheme={roomData.isVoting ? "green" : "blue"}
@@ -144,7 +144,7 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
           </Stack>
         </>
       )}
-    </Container>
+    </Box>
   );
 };
 

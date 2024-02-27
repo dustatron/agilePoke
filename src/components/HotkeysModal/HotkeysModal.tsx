@@ -18,8 +18,10 @@ import {
   TableCaption,
   TableContainer,
   MenuItem,
+  Icon,
 } from "@chakra-ui/react";
 import React from "react";
+import { SiAutohotkey } from "react-icons/si";
 
 type Props = {};
 
@@ -27,7 +29,10 @@ function HotkeysModal({}: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <MenuItem onClick={onOpen}>Hot Keys</MenuItem>
+      <MenuItem onClick={onOpen}>
+        {" "}
+        <Icon as={SiAutohotkey} h={4} w={4} mr="3" /> Hot Keys
+      </MenuItem>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

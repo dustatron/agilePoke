@@ -5,6 +5,7 @@ import {
   FormLabel,
   Input,
   Stack,
+  Text,
 } from "@chakra-ui/react";
 
 import React from "react";
@@ -16,6 +17,7 @@ type Props = {
   buttonCopy: string;
   placeholder: string;
   isLoading?: boolean;
+  maxLength?: number;
 };
 const BasicForm = ({
   onSubmit,
@@ -23,11 +25,18 @@ const BasicForm = ({
   buttonCopy,
   placeholder,
   isLoading,
+  maxLength = 10,
 }: Props) => {
   const [roomName, setRoomName] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const clearError = () => {
+    setErrorMessage(null);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputVal = e.target.value.replace(/[^a-z0-9-]/gi, "");
+    clearError();
     if (inputVal.length < 25) {
       setRoomName(inputVal);
     }
@@ -35,7 +44,13 @@ const BasicForm = ({
 
   const preventSubmitDefault = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    onSubmit(roomName);
+    if (roomName.length <= maxLength) {
+      onSubmit(roomName);
+    } else if (roomName.length > maxLength) {
+      setErrorMessage(`Max length ${maxLength}`);
+    } else {
+      setErrorMessage("This was an error");
+    }
   };
 
   return (
@@ -57,6 +72,11 @@ const BasicForm = ({
               onChange={handleChange}
             />
           </FormControl>
+          {!!errorMessage && (
+            <Text fontWeight="semibold" color="red">
+              {errorMessage}
+            </Text>
+          )}
 
           <Box paddingTop={2} width="100%">
             <Button
@@ -64,7 +84,7 @@ const BasicForm = ({
               width="100%"
               colorScheme="twitter"
               isLoading={isLoading}
-              isDisabled={roomName.length < 1}
+              isDisabled={roomName.length < 1 || !!errorMessage}
             >
               {buttonCopy}
             </Button>

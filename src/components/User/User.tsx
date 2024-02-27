@@ -11,7 +11,7 @@ type Props = {
 };
 
 const User = ({ name, isVoting, vote, isCurrentUser }: Props) => {
-  const hasVote = vote && vote > 0;
+  const hasVote = vote !== null;
   return (
     <Flex
       borderWidth="3px"
@@ -29,7 +29,7 @@ const User = ({ name, isVoting, vote, isCurrentUser }: Props) => {
       {name && (
         <Box>
           <Text textAlign="center" fontSize="xl" fontWeight="bold">
-            {name}
+            {name.slice(0, 10)}
           </Text>
         </Box>
       )}

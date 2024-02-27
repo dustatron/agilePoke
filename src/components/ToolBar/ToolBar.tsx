@@ -26,34 +26,34 @@ const ToolBar = ({
   isAutoResetOn,
 }: ToolBarProps) => {
   return (
-    <>
-      {roomData.isVoting && (
-        <Box bg="blue.500" color="white" textAlign="center">
-          <Text as="h3" fontWeight={600} fontSize={20}>
-            Pointing In Progress
-          </Text>
-        </Box>
-      )}
-
-      {!roomData.isVoting && (
-        <Box bg="green.500" color="white" textAlign="center">
-          <Text as="h3" fontWeight={600} fontSize={20}>
-            Showing
-          </Text>
-          {isAutoReset && <ProgressBar />}
-        </Box>
-      )}
-      <Stack direction="row" paddingTop="20px" justifyContent="end">
-        {currentUser && (
-          <SettingsMenu
-            roomId={roomId}
-            voteData={voteData}
-            toggleAutoReset={handleAutoReset}
-            isAutoResetOn={isAutoResetOn}
-          />
+    <Stack direction="row" justify="space-between">
+      <Box w="5%"></Box>
+      <Box w="90%">
+        {roomData.isVoting && (
+          <Box bg="blue.500" color="white" textAlign="center" h="100%">
+            <Text as="h3" fontWeight={600} fontSize={20}>
+              Pointing In Progress
+            </Text>
+          </Box>
         )}
-      </Stack>
-    </>
+
+        {!roomData.isVoting && (
+          <Box bg="green.500" color="white" textAlign="center" h="100%">
+            <Text as="h3" fontWeight={600} fontSize={20}>
+              Showing
+            </Text>
+          </Box>
+        )}
+      </Box>
+      {currentUser && (
+        <SettingsMenu
+          roomId={roomId}
+          voteData={voteData}
+          toggleAutoReset={handleAutoReset}
+          isAutoResetOn={isAutoResetOn}
+        />
+      )}
+    </Stack>
   );
 };
 

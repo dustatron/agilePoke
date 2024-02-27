@@ -1,1 +1,1 @@
-export const OPTIONS = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 99];
+export const OPTIONS = [0, 1, 2, 3, 5, 8, 13, 21, 99];

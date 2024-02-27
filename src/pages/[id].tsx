@@ -2,9 +2,8 @@ import { useRouter } from "next/router";
 import PokerGame from "../components/PokerGame";
 import { create } from "zustand";
 import useMakeRoom from "../hooks/useMakeRoom";
-import { useGetRoom, useLocalStorage } from "../hooks";
-import { Box, Button, Container, Spinner, Stack, Text } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useGetRoom } from "../hooks";
+import { Box, Button, Center, Container, Stack, Text } from "@chakra-ui/react";
 import PokerBoardLoad from "../components/PokerBoardLoad/PokerBoardLoad";
 
 type State = {
@@ -33,35 +32,29 @@ const Poker = () => {
   }
   if (!data) {
     return (
-      <Container>
-        <Box p="5" border="1px" rounded="md">
-          <Text as="h2" textAlign="center" fontSize="xl" fontWeight="light">
-            No Room Data
-          </Text>
-          <Text align="center">
-            The room{" "}
-            <Text
-              fontWeight="black"
-              display="inline"
-              textTransform="capitalize"
-            >
-              {roomId}
-            </Text>{" "}
-            does not exist. would you like to created it?
-          </Text>
-          <Stack p="5">
-            <Button
-              onClick={() => {
-                addRoom(roomId as string);
-                refetch();
-              }}
-              colorScheme="green"
-            >
-              Make Room
-            </Button>
-          </Stack>
-        </Box>
-      </Container>
+      <Center>
+        <Text as="h2" textAlign="center" fontSize="xl" fontWeight="light">
+          No Room Data
+        </Text>
+        <Text align="center">
+          The room{" "}
+          <Text fontWeight="black" display="inline" textTransform="capitalize">
+            {roomId}
+          </Text>{" "}
+          does not exist. would you like to created it?
+        </Text>
+        <Stack p="5">
+          <Button
+            onClick={() => {
+              addRoom(roomId as string);
+              refetch();
+            }}
+            colorScheme="green"
+          >
+            Make Room
+          </Button>
+        </Stack>
+      </Center>
     );
   }
   return <div>Error</div>;

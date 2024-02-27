@@ -1,15 +1,17 @@
 import {
   Box,
-  Button,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Icon,
-  Badge,
+  IconButton,
 } from "@chakra-ui/react";
 import { useDeleteVoters } from "../../hooks";
-import { AiOutlineSetting } from "react-icons/ai";
+import { GiHamburgerMenu } from "react-icons/gi";
+import { MdDriveFileRenameOutline } from "react-icons/md";
+
+import { IoReload } from "react-icons/io5";
 
 import React from "react";
 import { UserData } from "../../utils/types";
@@ -25,12 +27,7 @@ type Props = {
   isAutoResetOn: boolean;
 };
 
-const SettingsMenu = ({
-  roomId,
-  voteData,
-  toggleAutoReset,
-  isAutoResetOn,
-}: Props) => {
+const SettingsMenu = ({ roomId, voteData }: Props) => {
   const { setIsShowingAddUser } = useAlertStore((store) => ({
     setIsShowingAddUser: store.setIsShowingAddUser,
   }));
@@ -50,19 +47,23 @@ const SettingsMenu = ({
   };
 
   return (
-    <Box display="flex" justifyContent="right" marginTop="3">
+    <Box display="flex" justifyContent="right">
       <Menu>
         <MenuButton
-          as={Button}
-          rightIcon={<Icon as={AiOutlineSetting} h={6} w={6} />}
+          as={IconButton}
+          icon={<Icon as={GiHamburgerMenu} h={6} w={6} color="black" />}
           colorScheme="twitter"
-          variant="outline"
-        >
-          Settings
-        </MenuButton>
+          variant="ghost"
+        />
         <MenuList>
-          <MenuItem onClick={handleResetAllUsers}>Refresh users</MenuItem>
-          <MenuItem onClick={handleResetUser}>Reset your name</MenuItem>
+          <MenuItem onClick={handleResetAllUsers}>
+            <Icon as={IoReload} h={4} w={4} mr="3" /> Refresh users
+          </MenuItem>
+          <MenuItem onClick={handleResetUser}>
+            {" "}
+            <Icon as={MdDriveFileRenameOutline} h={4} w={4} mr="3" /> Edit your
+            name
+          </MenuItem>
           <HotkeysModal />
         </MenuList>
       </Menu>
