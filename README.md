@@ -17,3 +17,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ### Tooling
 
 This page makes use of [react firebase hooks](https://github.com/CSFrequency/react-firebase-hooks/tree/master/firestore) package to simplify subscribing to data from Firebase.
+
+## Details
+
+Update types
+
+```
+npx pocketbase-typegen --url https://pocket.pdxmccord.com --email 'email' --password 'password'
+```

@@ -8,97 +8,137 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { collection, doc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import useAddUser from "../../hooks/useAddUser";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
-import { firestoreDB } from "../../utils/firebase";
 import { LocalStorageKeys, Room, UserData } from "../../utils/types";
 import BasicForm from "../BasicForm";
 import PokerBoard from "../PokerBoard";
+import { createBrowserClient } from "../../utils/pocketbase";
+import {
+  PokerRoomRecord,
+  PokerUserRecord,
+  TypedPocketBase,
+  UsersRecord,
+} from "pocketTypes";
+import useCreateUserPB from "../../hooks/useCreateUserPB";
+import useGetUserListByRoom from "../../hooks/useGetUserListByRoom";
+import useAddUserToRoomPB from "../../hooks/useAddUserToRoomPB";
 
-type Props = { roomId: string };
+type User = {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  id: string;
+  name: string;
+  pokerRoom: string;
+  updated: string;
+};
 
-function PokerGame({ roomId }: Props) {
-  const [currentUser, setCurrentUser] = useLocalStorage(
+type Props = { roomId: string; roomData: PokerRoomRecord };
+
+function PokerGame({ roomId, roomData }: Props) {
+  const pb = createBrowserClient();
+  const [localVotersList, setLocalVotersList] = useState<UsersRecord[]>();
+  const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord>(
     LocalStorageKeys.User,
-    "initial"
+    null
   );
+
+  // create User
+  const {
+    mutate: createUser,
+    data: thisUser,
+    status: creatingUserStatus,
+  } = useCreateUserPB({
+    userName: currentUser?.name,
+    // @ts-ignore
+    pokerRoom: roomData?.id,
+  });
+
+  // Update user room
+  const { mutate: addRoomToUser } = useAddUserToRoomPB({
+    // @ts-ignore
+    userId: currentUser?.id,
+    // @ts-ignore
+    pokerRoom: roomData?.id,
+  });
+
+  const { data: userList, refetch: refetchUserList } = useGetUserListByRoom({
+    roomName: roomData?.name,
+  });
+
+  useEffect(() => {
+    if (userList?.items?.length) {
+      setLocalVotersList(userList.items);
+    }
+  }, [userList]);
+
   const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
     state.setIsShowingAddUser,
   ]);
 
-  const [roomData, setRoomData] = useState<Room>();
-  const [votersList, setVotersList] = useState<UserData[]>();
-
-  const { mutate: addUser, isLoading: isAddUserLoading } = useAddUser({
-    roomId,
-    setUser: (user) => setCurrentUser(user),
-    userId: currentUser?.id,
-    onSettled: () => {
-      setIsShowGetUser(false);
-    },
-  });
-
   // Get User name
   useEffect(() => {
-    if (currentUser === "initial") {
+    if (!currentUser) {
       setIsShowGetUser(true);
     }
   }, [currentUser, setIsShowGetUser]);
 
+  // on user creation
+  useEffect(() => {
+    if (thisUser?.id) {
+      // @ts-ignore
+      setCurrentUser(thisUser);
+      setIsShowGetUser(false);
+    }
+  }, [thisUser]);
+
   // Add user to room
   useEffect(() => {
-    const hasUserData = currentUser !== "initial";
+    const hasUserData = !!currentUser?.id;
 
-    const isCurrentUserInRoom = !!votersList?.find(
-      (voter) => voter.id === currentUser?.id
-    );
+    const isCurrentUserInRoom =
+      localVotersList &&
+      currentUser &&
+      localVotersList.filter((user) => user.id === currentUser.id).length;
+
     if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
-      addUser(currentUser.name);
-    }
-  }, [
-    addUser,
-    currentUser,
-    currentUser?.id,
-    currentUser.name,
-    isShowGetUser,
-    votersList,
-  ]);
-
-  // Subscribe to firebase
-  useEffect(() => {
-    const roomRef = doc(firestoreDB, "rooms", roomId as string);
-    const playersRef = collection(firestoreDB, `rooms/${roomId}/votes`);
-
-    const unSubRooms = onSnapshot(roomRef, (doc) => {
-      setRoomData({ ...(doc.data() as Room) });
-    });
-
-    const unSubPlayers = onSnapshot(playersRef, (querySnapshot) => {
-      let tempPlayersList: UserData[] = [];
-      querySnapshot.forEach((player) => {
-        tempPlayersList.push({
-          ...player.data(),
-          id: player.id,
-        } as UserData);
+      console.log("adding to room", currentUser);
+      addRoomToUser({
+        userId: currentUser.id,
+        pokerRoom: roomData.id,
       });
-      setVotersList(tempPlayersList);
-    });
+      setTimeout(() => {
+        refetchUserList();
+      }, 100);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    pb.collection("pokerUser");
+    if (currentUser?.id) {
+      pb.collection("pokerUser")
+        .getOne(currentUser.id)
+        .then((user) => {
+          console.log("user issue", user);
+        })
+        .catch((error) => {
+          console.error("No User", error);
+        });
+    }
     return () => {
-      unSubRooms();
-      unSubPlayers();
+      pb.collection("pokerRoom").unsubscribe(roomId);
     };
+
     //Should only run on first render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddUser = (name: string) => {
-    if (name.length > 10) {
-    } else {
-      addUser(name);
+    if (name) {
+      createUser({ userName: name, pokerRoom: roomData?.id });
     }
   };
 
@@ -114,7 +154,7 @@ function PokerGame({ roomId }: Props) {
               title="Display name"
               placeholder="Name"
               buttonCopy="Go"
-              isLoading={isAddUserLoading}
+              isLoading={creatingUserStatus === "loading"}
               onSubmit={(name: string) => handleAddUser(name)}
             />
           </Container>
@@ -143,12 +183,12 @@ function PokerGame({ roomId }: Props) {
                 mb="1"
                 rounded="md"
               >
-                {roomData.name.toLowerCase()} Room
+                {roomData.name?.toLowerCase()} Room
               </Heading>
               <PokerBoard
                 roomId={roomId}
                 roomData={roomData as Room}
-                voteData={votersList as UserData[]}
+                voteData={localVotersList as UserData[]}
                 currentUser={currentUser}
               />
             </Stack>
