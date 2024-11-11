@@ -1,18 +1,22 @@
 import { useMutation } from "react-query";
 import { createBrowserClient } from "../utils/pocketbase";
 
-type Props = { pokerRoom: string; userId: string };
+type Props = { pokerRoomId: string; userId: string };
 
-export default function useAddUserToRoomPB({ pokerRoom, userId }: Props) {
+export default function useAddUserToRoomPB({ pokerRoomId, userId }: Props) {
   const pb = createBrowserClient();
 
-  const fetcher = async ({ pokerRoom, userId }: Props) => {
+  const fetcher = async ({ pokerRoomId, userId }: Props) => {
     const data = {
-      pokerRoom,
+      pokerRoom: pokerRoomId,
     };
     const record = await pb.collection("pokerUser").update(userId, data);
 
+    await pb
+      .collection("pokerRoom")
+      .update(pokerRoomId, { users: [`${record.id}`] });
+
     return data;
   };
-  return useMutation(["updateUserRoom", pokerRoom, userId], fetcher);
+  return useMutation(["updateUserRoom", pokerRoomId, userId], fetcher);
 }

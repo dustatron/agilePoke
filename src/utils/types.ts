@@ -1,12 +1,14 @@
 export type UserData = {
-  name: string
-  vote: number | null
-  id: string
-}
+  name: string;
+  currentVote: number | null;
+  id: string;
+};
 
-export enum LocalStorageKeys { User = "mcPoker-user-name" }
+export enum LocalStorageKeys {
+  User = "mcPoker-user-name",
+}
 export interface Room {
-  id?: string
-  name: string
-  isVoting: boolean
+  id?: string;
+  name: string;
+  isVoting: boolean;
 }

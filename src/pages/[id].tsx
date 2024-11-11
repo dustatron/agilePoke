@@ -6,7 +6,9 @@ import { useGetRoom } from "../hooks";
 import { Button, Center, Stack, Text, Box } from "@chakra-ui/react";
 import PokerBoardLoad from "../components/PokerBoardLoad/PokerBoardLoad";
 import { createBrowserClient } from "../utils/pocketbase";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { PokerRoomResponse, PokerUserRecord } from "pocketTypes";
+import useGetUserListByRoom from "../hooks/useGetUserListByRoom";
 
 type State = {
   isShowingAddUser: boolean;
@@ -22,35 +24,83 @@ export const useAlertStore = create<State & Action>((set) => ({
 
 const Poker = () => {
   const router = useRouter();
-  const { id: roomId } = router.query;
-  const { mutate: addRoom } = useMakeRoom({ roomId: roomId as string });
-  const { data, isLoading, error, refetch } = useGetRoom({ roomId });
-  console.log("data", data);
+  const [roomDataSub, setRoomDataSub] = useState<PokerRoomResponse>();
+  const [usersDataSub, setUsersDataSub] = useState<PokerUserRecord[]>();
+  const { data: userList, error: userListError } = useGetUserListByRoom({
+    roomName: roomDataSub?.id,
+  });
+  const { id: roomIdUrl } = router.query;
+  const { mutate: addRoom } = useMakeRoom({ roomId: roomDataSub?.id || "" });
+  const {
+    data: roomDataCall,
+    isLoading,
+    error: roomDataError,
+    refetch,
+  } = useGetRoom({ roomId: roomIdUrl });
 
-  const subToRoom = useCallback((id: string) => {
-    const pb = createBrowserClient();
-    pb.collection("pokerRoom").subscribe(id, (e) => {
-      console.log("sub", e.action, e.record);
-    });
-  }, []);
+  console.log("userList", usersDataSub);
+  console.log("roomDataCall", roomDataCall);
 
   useEffect(() => {
-    if (data?.id) {
-      subToRoom(data.id);
+    if (
+      !userListError &&
+      !!userList?.items?.length &&
+      userList.items.length > 0
+    ) {
+      setUsersDataSub(userList.items);
     }
-  }, [data?.id]);
+  }, [userList]);
+
+  const subToRoom = (id: string) => {
+    const pb = createBrowserClient();
+
+    // Sub user list
+    pb.collection("pokerUser").subscribe("*", (e) => {
+      if (e.action === "update" || e.action === "create") {
+        pb.collection("pokerUser")
+          .getList(1, 10, {
+            filter: `pokerRoom.id="${id}"`,
+            sort: "-name",
+          })
+          .then((userList) => setUsersDataSub(userList.items));
+      }
+    });
+
+    return pb.collection("pokerRoom").subscribe(id, (e) => {
+      if (e.action === "update" || e.action === "create") {
+        pb.collection("pokerRoom")
+          .getOne(e.record.id, { expand: "users" })
+          .then((res) => console.log("res", res));
+
+        return setRoomDataSub(e.record);
+      }
+      return undefined;
+    });
+  };
+  console.log("roomDataSub", roomDataSub);
+
+  useEffect(() => {
+    if (roomDataCall?.id && !roomDataSub) {
+      subToRoom(roomDataCall.id);
+      setRoomDataSub(roomDataCall);
+    }
+  }, [roomDataCall?.id]);
 
   if (isLoading) {
     return <PokerBoardLoad />;
   }
-  if (roomId && !error && data) {
+  if (roomDataSub?.id && !roomDataError) {
     return (
       <>
-        <PokerGame roomId={roomId as string} roomData={data} />
+        <PokerGame
+          roomId={roomDataSub.id}
+          roomData={roomDataSub}
+          localVotersList={usersDataSub || []}
+        />
       </>
     );
   }
-  if (!data) {
+  if (!roomDataSub && roomDataError) {
     return (
       <Center>
         <Stack>
@@ -67,7 +117,7 @@ const Poker = () => {
                 display="inline"
                 textTransform="capitalize"
               >
-                {roomId}
+                {roomIdUrl}
               </Text>{" "}
               does not exist. would you like to created it?
             </Text>
@@ -75,7 +125,7 @@ const Poker = () => {
             <Stack p="5">
               <Button
                 onClick={() => {
-                  addRoom(roomId as string);
+                  addRoom(roomIdUrl as string);
                   refetch();
                 }}
                 colorScheme="green"

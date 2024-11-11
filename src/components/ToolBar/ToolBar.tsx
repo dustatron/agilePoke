@@ -1,30 +1,17 @@
 import { Box, Stack, Text } from "@chakra-ui/react";
 import React from "react";
-import { Room, UserData } from "../../utils/types";
-
-import ProgressBar from "./ProgressBar";
-import HotkeysModal from "../HotkeysModal";
+import { Room } from "../../utils/types";
 import SettingsMenu from "../SettingsMenu";
+import { PokerUserRecord } from "pocketTypes";
 
 type ToolBarProps = {
   roomData: Room;
-  isAutoReset: boolean;
-  currentUser: UserData;
+  currentUser: PokerUserRecord;
   roomId: string;
-  voteData: UserData[];
-  handleAutoReset: () => void;
-  isAutoResetOn: boolean;
+  voteData: PokerUserRecord[];
 };
 
-const ToolBar = ({
-  roomData,
-  isAutoReset,
-  currentUser,
-  roomId,
-  voteData,
-  handleAutoReset,
-  isAutoResetOn,
-}: ToolBarProps) => {
+const ToolBar = ({ roomData, currentUser, roomId, voteData }: ToolBarProps) => {
   return (
     <Stack direction="row" justify="space-between">
       <Box w="5%"></Box>
@@ -45,14 +32,7 @@ const ToolBar = ({
           </Box>
         )}
       </Box>
-      {currentUser && (
-        <SettingsMenu
-          roomId={roomId}
-          voteData={voteData}
-          toggleAutoReset={handleAutoReset}
-          isAutoResetOn={isAutoResetOn}
-        />
-      )}
+      {currentUser && <SettingsMenu roomId={roomId} voteData={voteData} />}
     </Stack>
   );
 };

@@ -15,31 +15,20 @@ import { LocalStorageKeys, Room, UserData } from "../../utils/types";
 import BasicForm from "../BasicForm";
 import PokerBoard from "../PokerBoard";
 import { createBrowserClient } from "../../utils/pocketbase";
-import {
-  PokerRoomRecord,
-  PokerUserRecord,
-  TypedPocketBase,
-  UsersRecord,
-} from "pocketTypes";
+import { PokerRoomRecord, PokerUserRecord, UsersRecord } from "pocketTypes";
 import useCreateUserPB from "../../hooks/useCreateUserPB";
 import useGetUserListByRoom from "../../hooks/useGetUserListByRoom";
 import useAddUserToRoomPB from "../../hooks/useAddUserToRoomPB";
 
-type User = {
-  collectionId: string;
-  collectionName: string;
-  created: string;
-  id: string;
-  name: string;
-  pokerRoom: string;
-  updated: string;
+type Props = {
+  roomId: string;
+  roomData: PokerRoomRecord;
+  localVotersList: PokerUserRecord[];
 };
 
-type Props = { roomId: string; roomData: PokerRoomRecord };
-
-function PokerGame({ roomId, roomData }: Props) {
+function PokerGame({ roomId, roomData, localVotersList }: Props) {
   const pb = createBrowserClient();
-  const [localVotersList, setLocalVotersList] = useState<UsersRecord[]>();
+  // const [localVotersList, setLocalVotersList] = useState<PokerUserRecord[]>();
   const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord>(
     LocalStorageKeys.User,
     null
@@ -64,15 +53,15 @@ function PokerGame({ roomId, roomData }: Props) {
     pokerRoom: roomData?.id,
   });
 
-  const { data: userList, refetch: refetchUserList } = useGetUserListByRoom({
-    roomName: roomData?.name,
-  });
+  // const { data: userList, refetch: refetchUserList } = useGetUserListByRoom({
+  //   roomName: roomData?.name,
+  // });
 
-  useEffect(() => {
-    if (userList?.items?.length) {
-      setLocalVotersList(userList.items);
-    }
-  }, [userList]);
+  // useEffect(() => {
+  //   if (userList?.items?.length) {
+  //     setLocalVotersList(userList.items);
+  //   }
+  // }, [userList]);
 
   const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
@@ -100,18 +89,19 @@ function PokerGame({ roomId, roomData }: Props) {
     const hasUserData = !!currentUser?.id;
 
     const isCurrentUserInRoom =
-      localVotersList &&
-      currentUser &&
-      localVotersList.filter((user) => user.id === currentUser.id).length;
+      (Array.isArray(localVotersList) &&
+        currentUser &&
+        localVotersList.filter((user) => user.id === currentUser.id).length) ||
+      false;
 
-    if (!isCurrentUserInRoom && !isShowGetUser && hasUserData) {
-      console.log("adding to room", currentUser);
+    if (!isCurrentUserInRoom && hasUserData) {
+      console.log("addUser");
       addRoomToUser({
         userId: currentUser.id,
-        pokerRoom: roomData.id,
+        pokerRoomId: roomData.id,
       });
       setTimeout(() => {
-        refetchUserList();
+        // refetchUserList();
       }, 100);
     }
   }, [currentUser]);
@@ -125,12 +115,10 @@ function PokerGame({ roomId, roomData }: Props) {
           console.log("user issue", user);
         })
         .catch((error) => {
+          // TODO: NEED TO HANDLE THIS
           console.error("No User", error);
         });
     }
-    return () => {
-      pb.collection("pokerRoom").unsubscribe(roomId);
-    };
 
     //Should only run on first render
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -160,7 +148,7 @@ function PokerGame({ roomId, roomData }: Props) {
           </Container>
         </SlideFade>
       )}
-      {roomData && currentUser && !isShowGetUser && (
+      {roomData && localVotersList && currentUser && !isShowGetUser && (
         <SlideFade in={!isShowGetUser} offsetY="50px">
           <Center>
             <Stack
@@ -188,7 +176,7 @@ function PokerGame({ roomId, roomData }: Props) {
               <PokerBoard
                 roomId={roomId}
                 roomData={roomData as Room}
-                voteData={localVotersList as UserData[]}
+                voteData={localVotersList}
                 currentUser={currentUser}
               />
             </Stack>

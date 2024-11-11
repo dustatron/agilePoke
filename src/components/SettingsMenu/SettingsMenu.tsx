@@ -14,17 +14,14 @@ import { MdDriveFileRenameOutline } from "react-icons/md";
 import { IoReload } from "react-icons/io5";
 
 import React from "react";
-import { UserData } from "../../utils/types";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
-import ResetTimeModal from "./ResetTimeModal";
 import HotkeysModal from "../HotkeysModal";
+import { PokerUserRecord } from "pocketTypes";
 
 type Props = {
   roomId: string;
-  voteData: UserData[];
-  toggleAutoReset: () => void;
-  isAutoResetOn: boolean;
+  voteData: PokerUserRecord[];
 };
 
 const SettingsMenu = ({ roomId, voteData }: Props) => {

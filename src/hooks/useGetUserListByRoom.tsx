@@ -13,8 +13,8 @@ function useGetUserListByRoom({ roomName }: Props) {
     ListResult<PokerUserResponse<PokerUserRecord>>
   > => {
     return await pb.collection("pokerUser").getList(1, 10, {
-      filter: `pokerRoom.name="${roomName}"`,
-      sort: "-created",
+      filter: `pokerRoom.id="${roomName}"`,
+      sort: "-name",
     });
   };
 

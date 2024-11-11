@@ -1,18 +1,26 @@
-import { doc, updateDoc } from "firebase/firestore";
-import { firestoreDB } from "../utils/firebase";
+import { PokerUserRecord } from "pocketTypes";
+import { createBrowserClient } from "../utils/pocketbase";
 
-import { UserData } from "../utils/types";
+const useResetAllVotes = () => {
+  const pb = createBrowserClient();
+  const postResetUserVote = async (userId: string) => {
+    const data = {
+      currentVote: 0,
+      isActive: false,
+    };
+    return await pb.collection("pokerUser").update(userId, data);
+  };
 
-const useResetAllVotes = (voteData: UserData[], roomId: string) => {
-  return async () => {
-    voteData.forEach((voter) => {
-      const docRef = doc(firestoreDB, `rooms/${roomId}/votes`, voter.id);
-      try {
-        updateDoc(docRef, { vote: null });
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
-    });
+  return async (voteData: PokerUserRecord[], roomId: string) => {
+    for (const i in voteData) {
+      const userId = voteData[i].id;
+      await postResetUserVote(userId);
+    }
+
+    const data = {
+      isVoting: true,
+    };
+    await pb.collection("pokerRoom").update(roomId, data);
   };
 };
 

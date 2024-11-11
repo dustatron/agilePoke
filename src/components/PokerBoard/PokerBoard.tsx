@@ -1,6 +1,5 @@
 import {
   Button,
-  Container,
   Flex,
   Icon,
   Stack,
@@ -9,31 +8,27 @@ import {
   Text,
   Box,
 } from "@chakra-ui/react";
-import React, { useEffect, useRef, useState } from "react";
-import { Room, UserData } from "../../utils/types";
+import React from "react";
+import { Room } from "../../utils/types";
 import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
 import Card from "../Card";
 import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
 import { useHotkeys } from "react-hotkeys-hook";
 import { OPTIONS } from "../../utils/constants";
-import useTimeoutState from "../../hooks/useTimeoutState";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { GrPowerReset } from "react-icons/gr";
 import VoteCards from "../VoteCards";
+import { PokerUserRecord } from "pocketTypes";
 
 type Props = {
   roomData: Room;
   roomId: string;
-  voteData: UserData[];
-  currentUser: UserData;
+  voteData: PokerUserRecord[];
+  currentUser: PokerUserRecord;
 };
 
 const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
-  const [isAutoResetOn, setIsAutoResetOn] = useState(false);
-  const timeout = useTimeoutState((state) => state.timeout);
-  const timeoutRef = useRef<string | number | NodeJS.Timeout | undefined>();
-
   useHotkeys("shift+1", () => handleUpdateVote(1));
   useHotkeys("shift+2", () => handleUpdateVote(2));
   useHotkeys("shift+3", () => handleUpdateVote(3));
@@ -42,39 +37,25 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   useHotkeys("shift+s", () => handleShow());
   useHotkeys("esc", () => handleResetAllVotes());
 
-  const resetAllVotes = useResetAllVotes(voteData, roomId);
+  const resetAllVotes = useResetAllVotes();
   const { mutate: updateUserVote } = useUpdateVote();
 
   const handleUpdateVote = (vote: number) => {
-    updateUserVote({ roomId, userId: currentUser.id, vote });
+    updateUserVote({ userId: currentUser.id, vote });
   };
 
   const { mutate: updateVoteStatus } = useUpdateVoteStatus();
 
   const handleShow = () => {
-    updateVoteStatus({ roomId, isVoting: !roomData.isVoting });
+    updateVoteStatus({
+      roomId: roomData?.id || "",
+      isVoting: !roomData.isVoting,
+    });
   };
 
   const handleResetAllVotes = () => {
-    resetAllVotes();
-    updateVoteStatus({ roomId, isVoting: true });
+    resetAllVotes(voteData, roomData?.id || "");
   };
-
-  const handleAutoReset = () => {
-    setIsAutoResetOn(!isAutoResetOn);
-  };
-
-  useEffect(() => {
-    const delay = timeout * 60000;
-    if (!roomData.isVoting && isAutoResetOn) {
-      timeoutRef.current = setTimeout(() => {
-        handleShow();
-        resetAllVotes();
-      }, delay);
-    }
-    return () => clearInterval(timeoutRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAutoResetOn, roomData.isVoting, timeout]);
 
   return (
     <Box
@@ -91,11 +72,8 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
         <>
           <ToolBar
             roomData={roomData}
-            isAutoReset={isAutoResetOn}
             roomId={roomId}
             voteData={voteData}
-            handleAutoReset={handleAutoReset}
-            isAutoResetOn={isAutoResetOn}
             currentUser={currentUser}
           />
           <Flex

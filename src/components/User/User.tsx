@@ -7,11 +7,12 @@ type Props = {
   name: string;
   isVoting: boolean;
   vote: number | null;
+  isActive: boolean;
   isCurrentUser: boolean;
 };
 
-const User = ({ name, isVoting, vote, isCurrentUser }: Props) => {
-  const hasVote = vote !== null;
+const User = ({ name, isVoting, vote, isCurrentUser, isActive }: Props) => {
+  const hasVote = isActive;
   return (
     <Flex
       borderWidth="3px"

@@ -1,19 +1,19 @@
-import { doc, updateDoc } from "firebase/firestore";
-import React from "react";
 import { useMutation } from "react-query";
-import { firestoreDB } from "../utils/firebase";
-import { LocalStorageKeys, UserData } from "../utils/types";
-import useLocalStorage from "./useLocalStorage";
+import { createBrowserClient } from "../utils/pocketbase";
+
 type MutateProps = {
   userId: string;
-  roomId: string;
   vote: number;
 };
 function useUpdateVote() {
-  const fetcher = async ({ roomId, userId, vote }: MutateProps) => {
-    await updateDoc(doc(firestoreDB, `rooms/${roomId}/votes`, userId), {
-      vote,
-    });
+  const pb = createBrowserClient();
+  const fetcher = async ({ userId, vote }: MutateProps) => {
+    const data = {
+      currentVote: vote,
+      isActive: true,
+    };
+
+    return await pb.collection("pokerUser").update(userId, data);
   };
   return useMutation(["updateRoom"], fetcher);
 }

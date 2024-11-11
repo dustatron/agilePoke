@@ -8,12 +8,12 @@ export function createServerClient() {
 
   if (typeof window !== "undefined") {
     throw new Error(
-      "This method is only supposed to call from the Server environment",
+      "This method is only supposed to call from the Server environment"
     );
   }
 
   const client = new PocketBase(
-    "https://pocket.pdxmccord.com",
+    "https://pocket.pdxmccord.com"
   ) as TypedPocketBase;
 
   // if (cookieStore) {

@@ -1,15 +1,18 @@
-import { doc, updateDoc } from "firebase/firestore"
-import { useMutation } from "react-query"
-import { firestoreDB } from "../utils/firebase"
+import { useMutation } from "react-query";
+import { createBrowserClient } from "../utils/pocketbase";
 
+type MutateProps = { roomId: string; isVoting: boolean };
+const pb = createBrowserClient();
 
-type MutateProps = { roomId: string, isVoting: boolean }
 const useUpdateVoteStatus = () => {
   const fetcher = async ({ roomId, isVoting }: MutateProps) => {
-    await updateDoc(doc(firestoreDB, `rooms`, roomId),
-      { isVoting })
-  }
-  return useMutation(['updateRoomVoteStatus'], fetcher)
-}
+    const data = {
+      isVoting,
+    };
 
-export default useUpdateVoteStatus
+    const record = await pb.collection("pokerRoom").update(roomId, data);
+  };
+  return useMutation(["updateRoomVoteStatus"], fetcher);
+};
+
+export default useUpdateVoteStatus;

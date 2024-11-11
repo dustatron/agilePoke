@@ -3,11 +3,12 @@ import React from "react";
 import User from "../User";
 import { Room, UserData } from "../../utils/types";
 import { sortVotes } from "../../utils/sortVotes";
+import { PokerUserRecord } from "pocketTypes";
 
 type Props = {
-  voteData: UserData[];
+  voteData: PokerUserRecord[];
   roomData: Room;
-  currentUser: UserData;
+  currentUser: PokerUserRecord;
 };
 
 const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
@@ -24,9 +25,10 @@ const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
             <WrapItem key={user?.id}>
               <User
                 isVoting={roomData.isVoting}
-                name={user?.name}
-                vote={user?.vote}
+                name={user?.name || ""}
+                vote={user?.currentVote || 0}
                 isCurrentUser={user?.id === currentUser?.id}
+                isActive={user.isActive || false}
               />
             </WrapItem>
           ))}
@@ -42,8 +44,9 @@ const VoteCards = ({ voteData, roomData, currentUser }: Props) => {
                     <User
                       isVoting={roomData.isVoting}
                       name={user?.name}
-                      vote={user?.vote}
+                      vote={user?.currentVote || 0}
                       isCurrentUser={user?.id === currentUser?.id}
+                      isActive={user?.isActive || false}
                     />
                   </WrapItem>
                 ))}
