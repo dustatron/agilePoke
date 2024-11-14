@@ -1,29 +1,33 @@
-import { deleteDoc, doc } from "firebase/firestore"
-import { firestoreDB } from "../utils/firebase"
-
-import { UserData } from "../utils/types"
+import { LocalStorageKeys, UserData } from "../utils/types";
+import { PokerUserRecord } from "pocketTypes";
+import { createBrowserClient } from "../utils/pocketbase";
+import useLocalStorage from "./useLocalStorage";
 
 const useDeleteVoters = (roomId: string) => {
-
-
-  const deleteCurrentUser = async (voter: UserData) => {
-    try {
-      await deleteDoc(doc(firestoreDB, `rooms/${roomId}/votes`, voter.id))
-    } catch (e) {
-      console.error("Error removing currentUser", e)
+  const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord | null>(
+    LocalStorageKeys.User,
+    null
+  );
+  const pb = createBrowserClient();
+  const deleteCurrentUser = async (voter?: PokerUserRecord) => {
+    if (currentUser) {
+      await pb.collection("pokerUser").delete(currentUser.id);
+    } else if (voter) {
+      await pb.collection("pokerUser").delete(voter.id);
     }
-  }
-  const deleteAllVoters = (voteData: UserData[]) => {
-    voteData.forEach((voter) => {
-      const docRef = doc(firestoreDB, `rooms/${roomId}/votes`, voter.id)
+    setCurrentUser(null);
+  };
+  const deleteAllVoters = async (voteDataList: PokerUserRecord[]) => {
+    const pb = createBrowserClient();
+    for (let voter in voteDataList) {
+      await pb.collection("pokerUser").delete(voteDataList[voter].id);
       try {
-        deleteDoc(docRef)
-      } catch (e) {
-        console.error("Error adding document: ", e)
+      } catch (error) {
+        console.log(error);
       }
-    })
-  }
-  return { deleteCurrentUser, deleteAllVoters }
-}
+    }
+  };
+  return { deleteCurrentUser, deleteAllVoters };
+};
 
-export default useDeleteVoters
+export default useDeleteVoters;

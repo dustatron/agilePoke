@@ -56,6 +56,7 @@ export type MonstersRecord = {
 };
 
 export type PokerRoomRecord = {
+  id: string;
   description?: string;
   isVoting?: boolean;
   name?: string;

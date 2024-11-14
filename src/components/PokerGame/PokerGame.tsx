@@ -8,31 +8,40 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
-import { LocalStorageKeys, Room, UserData } from "../../utils/types";
+import { LocalStorageKeys, Room } from "../../utils/types";
 import BasicForm from "../BasicForm";
 import PokerBoard from "../PokerBoard";
 import { createBrowserClient } from "../../utils/pocketbase";
-import { PokerRoomRecord, PokerUserRecord, UsersRecord } from "pocketTypes";
+import { PokerRoomRecord, PokerUserRecord } from "pocketTypes";
 import useCreateUserPB from "../../hooks/useCreateUserPB";
-import useGetUserListByRoom from "../../hooks/useGetUserListByRoom";
 import useAddUserToRoomPB from "../../hooks/useAddUserToRoomPB";
 
 type Props = {
   roomId: string;
-  roomData: PokerRoomRecord;
+  roomRecord: PokerRoomRecord;
   localVotersList: PokerUserRecord[];
 };
 
-function PokerGame({ roomId, roomData, localVotersList }: Props) {
+function PokerGame({ roomId, roomRecord, localVotersList }: Props) {
   const pb = createBrowserClient();
   // const [localVotersList, setLocalVotersList] = useState<PokerUserRecord[]>();
   const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord>(
     LocalStorageKeys.User,
     null
   );
+  const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
+    state.isShowingAddUser,
+    state.setIsShowingAddUser,
+  ]);
+
+  // Update user room
+  const { mutate: addRoomToUser } = useAddUserToRoomPB({
+    userId: currentUser?.id,
+    pokerRoomId: roomRecord?.id,
+  });
 
   // create User
   const {
@@ -41,32 +50,8 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
     status: creatingUserStatus,
   } = useCreateUserPB({
     userName: currentUser?.name,
-    // @ts-ignore
-    pokerRoom: roomData?.id,
+    pokerRoom: roomRecord?.id,
   });
-
-  // Update user room
-  const { mutate: addRoomToUser } = useAddUserToRoomPB({
-    // @ts-ignore
-    userId: currentUser?.id,
-    // @ts-ignore
-    pokerRoom: roomData?.id,
-  });
-
-  // const { data: userList, refetch: refetchUserList } = useGetUserListByRoom({
-  //   roomName: roomData?.name,
-  // });
-
-  // useEffect(() => {
-  //   if (userList?.items?.length) {
-  //     setLocalVotersList(userList.items);
-  //   }
-  // }, [userList]);
-
-  const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
-    state.isShowingAddUser,
-    state.setIsShowingAddUser,
-  ]);
 
   // Get User name
   useEffect(() => {
@@ -78,7 +63,6 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
   // on user creation
   useEffect(() => {
     if (thisUser?.id) {
-      // @ts-ignore
       setCurrentUser(thisUser);
       setIsShowGetUser(false);
     }
@@ -98,13 +82,14 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
       console.log("addUser");
       addRoomToUser({
         userId: currentUser.id,
-        pokerRoomId: roomData.id,
+        pokerRoomId: roomRecord.id,
+        userName: currentUser?.name,
       });
       setTimeout(() => {
         // refetchUserList();
-      }, 100);
+      }, 300);
     }
-  }, [currentUser]);
+  }, [currentUser, localVotersList, roomRecord]);
 
   useEffect(() => {
     pb.collection("pokerUser");
@@ -126,7 +111,7 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
 
   const handleAddUser = (name: string) => {
     if (name) {
-      createUser({ userName: name, pokerRoom: roomData?.id });
+      createUser({ userName: name, pokerRoom: roomRecord?.id });
     }
   };
 
@@ -148,7 +133,7 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
           </Container>
         </SlideFade>
       )}
-      {roomData && localVotersList && currentUser && !isShowGetUser && (
+      {roomRecord && localVotersList && currentUser && !isShowGetUser && (
         <SlideFade in={!isShowGetUser} offsetY="50px">
           <Center>
             <Stack
@@ -171,11 +156,11 @@ function PokerGame({ roomId, roomData, localVotersList }: Props) {
                 mb="1"
                 rounded="md"
               >
-                {roomData.name?.toLowerCase()} Room
+                {roomRecord.name?.toLowerCase()} Room
               </Heading>
               <PokerBoard
                 roomId={roomId}
-                roomData={roomData as Room}
+                roomData={roomRecord as Room}
                 voteData={localVotersList}
                 currentUser={currentUser}
               />

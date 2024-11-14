@@ -10,11 +10,8 @@ import {
 import { useDeleteVoters } from "../../hooks";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-
 import { IoReload } from "react-icons/io5";
-
 import React from "react";
-import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
 import HotkeysModal from "../HotkeysModal";
 import { PokerUserRecord } from "pocketTypes";
@@ -28,19 +25,15 @@ const SettingsMenu = ({ roomId, voteData }: Props) => {
   const { setIsShowingAddUser } = useAlertStore((store) => ({
     setIsShowingAddUser: store.setIsShowingAddUser,
   }));
-  const [currentUser, setCurrentUser] = useLocalStorage(
-    "mcPoker-user-name",
-    {}
-  );
+
   const { deleteAllVoters, deleteCurrentUser } = useDeleteVoters(roomId);
 
   const handleResetAllUsers = () => {
     deleteAllVoters(voteData);
   };
   const handleResetUser = () => {
-    setCurrentUser({});
     setIsShowingAddUser(true);
-    deleteCurrentUser(currentUser);
+    deleteCurrentUser();
   };
 
   return (

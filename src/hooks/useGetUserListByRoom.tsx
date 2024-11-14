@@ -12,7 +12,7 @@ function useGetUserListByRoom({ roomName }: Props) {
   const fetcher = async (): Promise<
     ListResult<PokerUserResponse<PokerUserRecord>>
   > => {
-    return await pb.collection("pokerUser").getList(1, 10, {
+    return await pb.collection("pokerUser").getList(1, 200, {
       filter: `pokerRoom.id="${roomName}"`,
       sort: "-name",
     });

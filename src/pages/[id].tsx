@@ -38,9 +38,6 @@ const Poker = () => {
     refetch,
   } = useGetRoom({ roomId: roomIdUrl });
 
-  console.log("userList", usersDataSub);
-  console.log("roomDataCall", roomDataCall);
-
   useEffect(() => {
     if (
       !userListError &&
@@ -51,7 +48,7 @@ const Poker = () => {
     }
   }, [userList]);
 
-  const subToRoom = (id: string) => {
+  const subToRoom = useCallback((id: string) => {
     const pb = createBrowserClient();
 
     // Sub user list
@@ -66,6 +63,7 @@ const Poker = () => {
       }
     });
 
+    // sub room record
     return pb.collection("pokerRoom").subscribe(id, (e) => {
       if (e.action === "update" || e.action === "create") {
         pb.collection("pokerRoom")
@@ -76,8 +74,7 @@ const Poker = () => {
       }
       return undefined;
     });
-  };
-  console.log("roomDataSub", roomDataSub);
+  }, []);
 
   useEffect(() => {
     if (roomDataCall?.id && !roomDataSub) {
@@ -94,7 +91,7 @@ const Poker = () => {
       <>
         <PokerGame
           roomId={roomDataSub.id}
-          roomData={roomDataSub}
+          roomRecord={roomDataSub}
           localVotersList={usersDataSub || []}
         />
       </>
