@@ -1,6 +1,4 @@
 import { useQuery } from "react-query";
-
-import PocketBase from "pocketbase";
 import { createBrowserClient } from "../utils/pocketbase";
 
 type Props = { roomId?: string | string[] };
@@ -11,7 +9,9 @@ function useGetRoom({ roomId }: Props) {
   const fetcher = async () => {
     const room = await pb
       .collection("pokerRoom")
-      .getFirstListItem(`name="${roomId}"`, { expand: "users" });
+      .getFirstListItem(`name="${roomId}"`, {
+        expand: "users",
+      });
     return room;
   };
   return useQuery(["room", roomId], fetcher, { enabled: true });

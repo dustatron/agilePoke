@@ -8,14 +8,11 @@ type Props = { pokerRoomId: string; userId: string; userName?: string };
 
 export default function useAddUserToRoomPB({ pokerRoomId, userId }: Props) {
   const pb = createBrowserClient();
-  const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord>(
-    LocalStorageKeys.User,
-    null
-  );
 
   const fetcher = async ({ pokerRoomId, userId, userName }: Props) => {
     try {
       const userData = await pb.collection("pokerUser").getOne(userId);
+      const roomData = await pb.collection("pokerRoom").getOne(pokerRoomId);
 
       if (userData) {
         const data = {
@@ -25,13 +22,14 @@ export default function useAddUserToRoomPB({ pokerRoomId, userId }: Props) {
         const record = await pb.collection("pokerUser").update(userId, data);
         await pb
           .collection("pokerRoom")
-          .update(pokerRoomId, { users: [`${record.id}`] });
+          .update(pokerRoomId, { users: [...roomData.users, `${record.id}`] });
 
         return record;
       }
     } catch (error) {
-      console.log("user error", error);
-      setCurrentUser(null);
+      console.log("pokerUser request error:", error);
+      // TODO: handle error
+      // setCurrentUser(null);
     }
   };
 

@@ -1,14 +1,13 @@
 import { useRouter } from "next/router";
 import PokerGame from "../components/PokerGame";
 import { create } from "zustand";
-import useMakeRoom from "../hooks/useMakeRoom";
 import { useGetRoom } from "../hooks";
-import { Button, Center, Stack, Text, Box } from "@chakra-ui/react";
 import PokerBoardLoad from "../components/PokerBoardLoad/PokerBoardLoad";
 import { createBrowserClient } from "../utils/pocketbase";
 import { useCallback, useEffect, useState } from "react";
 import { PokerRoomResponse, PokerUserRecord } from "pocketTypes";
 import useGetUserListByRoom from "../hooks/useGetUserListByRoom";
+import CreateRoom from "../components/CreateRoom";
 
 type State = {
   isShowingAddUser: boolean;
@@ -25,29 +24,17 @@ export const useAlertStore = create<State & Action>((set) => ({
 const Poker = () => {
   const router = useRouter();
   const [roomDataSub, setRoomDataSub] = useState<PokerRoomResponse>();
-  const [usersDataSub, setUsersDataSub] = useState<PokerUserRecord[]>();
-  const { data: userList, error: userListError } = useGetUserListByRoom({
-    roomName: roomDataSub?.id,
-  });
+  const [userListSub, setUserListSub] = useState<PokerUserRecord[]>();
+  const [isSubbed, setIsSubbed] = useState(false);
+
   const { id: roomIdUrl } = router.query;
-  const { mutate: addRoom } = useMakeRoom({ roomId: roomDataSub?.id || "" });
   const {
     data: roomDataCall,
     isLoading,
-    error: roomDataError,
     refetch,
   } = useGetRoom({ roomId: roomIdUrl });
 
-  useEffect(() => {
-    if (
-      !userListError &&
-      !!userList?.items?.length &&
-      userList.items.length > 0
-    ) {
-      setUsersDataSub(userList.items);
-    }
-  }, [userList]);
-
+  // Setup subscriptions
   const subToRoom = useCallback((id: string) => {
     const pb = createBrowserClient();
 
@@ -59,7 +46,7 @@ const Poker = () => {
             filter: `pokerRoom.id="${id}"`,
             sort: "-name",
           })
-          .then((userList) => setUsersDataSub(userList.items));
+          .then((userList) => setUserListSub(userList.items));
       }
     });
 
@@ -68,7 +55,7 @@ const Poker = () => {
       if (e.action === "update" || e.action === "create") {
         pb.collection("pokerRoom")
           .getOne(e.record.id, { expand: "users" })
-          .then((res) => console.log("res", res));
+          .then((res) => console.log("subRoom data", res));
 
         return setRoomDataSub(e.record);
       }
@@ -76,65 +63,42 @@ const Poker = () => {
     });
   }, []);
 
+  // Sub to room
   useEffect(() => {
     if (roomDataCall?.id && !roomDataSub) {
-      subToRoom(roomDataCall.id);
+      if (!isSubbed) {
+        setIsSubbed(true);
+        subToRoom(roomDataCall.id);
+      }
       setRoomDataSub(roomDataCall);
+
+      if (roomDataCall.expand) {
+        // @ts-ignore
+        setUserListSub(roomDataCall.expand.users);
+      }
     }
   }, [roomDataCall?.id]);
+
+  const hasRoomData = !!roomDataSub;
+  console.log("RoomDataCall", roomDataCall);
+  console.log("roomDataSub", roomDataSub);
 
   if (isLoading) {
     return <PokerBoardLoad />;
   }
-  if (roomDataSub?.id && !roomDataError) {
+  if (!hasRoomData) {
+    return <CreateRoom refetch={refetch} />;
+  }
+  if (hasRoomData) {
     return (
-      <>
-        <PokerGame
-          roomId={roomDataSub.id}
-          roomRecord={roomDataSub}
-          localVotersList={usersDataSub || []}
-        />
-      </>
+      <PokerGame
+        roomId={roomDataSub.id}
+        roomRecord={roomDataSub}
+        localVotersList={userListSub || []}
+      />
     );
   }
-  if (!roomDataSub && roomDataError) {
-    return (
-      <Center>
-        <Stack>
-          <Box>
-            <Text as="h2" textAlign="center" fontSize="xl" fontWeight="light">
-              No Room Data
-            </Text>
-          </Box>
-          <Box>
-            <Text align="center">
-              The room{" "}
-              <Text
-                fontWeight="black"
-                display="inline"
-                textTransform="capitalize"
-              >
-                {roomIdUrl}
-              </Text>{" "}
-              does not exist. would you like to created it?
-            </Text>
 
-            <Stack p="5">
-              <Button
-                onClick={() => {
-                  addRoom(roomIdUrl as string);
-                  refetch();
-                }}
-                colorScheme="green"
-              >
-                Make Room
-              </Button>
-            </Stack>
-          </Box>
-        </Stack>
-      </Center>
-    );
-  }
   return <div>Error</div>;
 };
 

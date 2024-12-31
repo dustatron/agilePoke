@@ -9,8 +9,12 @@ import {
   Box,
 } from "@chakra-ui/react";
 import React from "react";
-import { Room } from "../../utils/types";
-import { useResetAllVotes, useUpdateVoteStatus } from "../../hooks";
+import { LocalStorageKeys, Room } from "../../utils/types";
+import {
+  useLocalStorage,
+  useResetAllVotes,
+  useUpdateVoteStatus,
+} from "../../hooks";
 import Card from "../Card";
 import ToolBar from "../ToolBar";
 import useUpdateVote from "../../hooks/useUpdateVote";
@@ -29,6 +33,10 @@ type Props = {
 };
 
 const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
+  const [localUserData] = useLocalStorage<PokerUserRecord>(
+    LocalStorageKeys.User,
+    null
+  );
   useHotkeys("shift+1", () => handleUpdateVote(1));
   useHotkeys("shift+2", () => handleUpdateVote(2));
   useHotkeys("shift+3", () => handleUpdateVote(3));
@@ -41,7 +49,7 @@ const PokerBoard = ({ roomData, roomId, voteData, currentUser }: Props) => {
   const { mutate: updateUserVote } = useUpdateVote();
 
   const handleUpdateVote = (vote: number) => {
-    updateUserVote({ userId: currentUser.id, vote });
+    updateUserVote({ userId: localUserData.id, vote });
   };
 
   const { mutate: updateVoteStatus } = useUpdateVoteStatus();

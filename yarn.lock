@@ -3410,10 +3410,10 @@ picomatch@^2.3.1:
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-2.3.1.tgz"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
-pocketbase@^0.21.4:
-  version "0.21.4"
-  resolved "https://registry.yarnpkg.com/pocketbase/-/pocketbase-0.21.4.tgz#8ea951009a98e74d24606e3b403ca05e505ef715"
-  integrity sha512-WJHyaqdAt95JgZ1OCRD099+DST4IIG0M/jMrCckWYDSN/6ocp61qsz7m6h0xI0J2N79ScBljceEC0fFAaQrrAw==
+pocketbase@^0.23.12:
+  version "0.25.0-rc"
+  resolved "https://registry.yarnpkg.com/pocketbase/-/pocketbase-0.25.0-rc.tgz#5e93a4aa569f140c3a119fdda3f1eeb67147aa71"
+  integrity sha512-qgVpz0kJ9hgoEhuIhgXMVH7XqYbdV6UZdpykC2B4UonK6PCI6j98Cbp7PUWaRzs/zbywKLNzZfu30y64Rqu2pg==
 
 popmotion@11.0.3:
   version "11.0.3"

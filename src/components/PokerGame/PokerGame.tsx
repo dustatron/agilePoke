@@ -1,23 +1,14 @@
-import {
-  Box,
-  Button,
-  Center,
-  Container,
-  Heading,
-  SlideFade,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Center, Heading, SlideFade, Stack } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useAlertStore } from "../../pages/[id]";
 import { LocalStorageKeys, Room } from "../../utils/types";
-import BasicForm from "../BasicForm";
 import PokerBoard from "../PokerBoard";
-import { createBrowserClient } from "../../utils/pocketbase";
 import { PokerRoomRecord, PokerUserRecord } from "pocketTypes";
-import useCreateUserPB from "../../hooks/useCreateUserPB";
 import useAddUserToRoomPB from "../../hooks/useAddUserToRoomPB";
+import CreateUser from "../CreateUser";
+import useGetUser from "../../hooks/useGetUser";
+import useCreateUserPB from "../../hooks/useCreateUserPB";
 
 type Props = {
   roomId: string;
@@ -26,115 +17,90 @@ type Props = {
 };
 
 function PokerGame({ roomId, roomRecord, localVotersList }: Props) {
-  const pb = createBrowserClient();
-  // const [localVotersList, setLocalVotersList] = useState<PokerUserRecord[]>();
-  const [currentUser, setCurrentUser] = useLocalStorage<PokerUserRecord>(
+  const [localUserData, setLocalUserData] = useLocalStorage<PokerUserRecord>(
     LocalStorageKeys.User,
     null
   );
-  const [isShowGetUser, setIsShowGetUser] = useAlertStore((state) => [
+  const [isShowingGetUser, setIsShowingGetUser] = useAlertStore((state) => [
     state.isShowingAddUser,
     state.setIsShowingAddUser,
   ]);
 
+  const { data: userData, status: getUserState } = useGetUser({
+    userId: localUserData?.id,
+  });
+
   // Update user room
-  const { mutate: addRoomToUser } = useAddUserToRoomPB({
-    userId: currentUser?.id,
+  const { mutate: addUserToRoom } = useAddUserToRoomPB({
+    userId: localUserData?.id,
     pokerRoomId: roomRecord?.id,
   });
 
   // create User
-  const {
-    mutate: createUser,
-    data: thisUser,
-    status: creatingUserStatus,
-  } = useCreateUserPB({
-    userName: currentUser?.name,
-    pokerRoom: roomRecord?.id,
+  const { mutate: createUser } = useCreateUserPB({
+    userName: localUserData?.name,
+    pokerRoom: roomId,
   });
 
-  // Get User name
+  // handle User data setup on server
   useEffect(() => {
-    if (!currentUser) {
-      setIsShowGetUser(true);
+    if (localUserData?.id && getUserState === "success" && !userData?.id) {
+      createUser({
+        userName: localUserData.name,
+        pokerRoom: roomId,
+      });
     }
-  }, [currentUser, setIsShowGetUser]);
+  }, [
+    createUser,
+    getUserState,
+    localUserData?.id,
+    localUserData?.name,
+    roomId,
+    userData,
+  ]);
 
-  // on user creation
+  // Check user state
   useEffect(() => {
-    if (thisUser?.id) {
-      setCurrentUser(thisUser);
-      setIsShowGetUser(false);
+    if (!localUserData) {
+      setIsShowingGetUser(true);
     }
-  }, [thisUser]);
+  }, [localUserData, setIsShowingGetUser]);
 
   // Add user to room
   useEffect(() => {
-    const hasUserData = !!currentUser?.id;
-
+    const hasUserData = !!localUserData?.id;
     const isCurrentUserInRoom =
       (Array.isArray(localVotersList) &&
-        currentUser &&
-        localVotersList.filter((user) => user.id === currentUser.id).length) ||
+        localUserData &&
+        localVotersList.filter((user) => user.id === localUserData.id)
+          .length) ||
       false;
 
     if (!isCurrentUserInRoom && hasUserData) {
-      console.log("addUser");
-      addRoomToUser({
-        userId: currentUser.id,
+      addUserToRoom({
+        userId: localUserData.id,
         pokerRoomId: roomRecord.id,
-        userName: currentUser?.name,
+        userName: localUserData?.name,
       });
       setTimeout(() => {
         // refetchUserList();
       }, 300);
     }
-  }, [currentUser, localVotersList, roomRecord]);
-
-  useEffect(() => {
-    pb.collection("pokerUser");
-    if (currentUser?.id) {
-      pb.collection("pokerUser")
-        .getOne(currentUser.id)
-        .then((user) => {
-          console.log("user issue", user);
-        })
-        .catch((error) => {
-          // TODO: NEED TO HANDLE THIS
-          console.error("No User", error);
-        });
-    }
-
-    //Should only run on first render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleAddUser = (name: string) => {
-    if (name) {
-      createUser({ userName: name, pokerRoom: roomRecord?.id });
-    }
-  };
+  }, [
+    addUserToRoom,
+    localUserData,
+    localVotersList,
+    roomRecord,
+    isShowingGetUser,
+  ]);
 
   return (
     <Box p="0">
-      {isShowGetUser && (
-        <SlideFade in={isShowGetUser} offsetY="100px">
-          <Container padding="2">
-            <Text as="h2" textAlign="center" fontSize="xl" fontWeight="light">
-              Provide your name
-            </Text>
-            <BasicForm
-              title="Display name"
-              placeholder="Name"
-              buttonCopy="Go"
-              isLoading={creatingUserStatus === "loading"}
-              onSubmit={(name: string) => handleAddUser(name)}
-            />
-          </Container>
-        </SlideFade>
+      {isShowingGetUser && (
+        <CreateUser roomId={roomId} setIsShowing={setIsShowingGetUser} />
       )}
-      {roomRecord && localVotersList && currentUser && !isShowGetUser && (
-        <SlideFade in={!isShowGetUser} offsetY="50px">
+      {roomRecord && localVotersList && !isShowingGetUser && (
+        <SlideFade in={!isShowingGetUser} offsetY="50px">
           <Center>
             <Stack
               justifyContent="center"
@@ -162,7 +128,7 @@ function PokerGame({ roomId, roomRecord, localVotersList }: Props) {
                 roomId={roomId}
                 roomData={roomRecord as Room}
                 voteData={localVotersList}
-                currentUser={currentUser}
+                currentUser={localUserData}
               />
             </Stack>
           </Center>

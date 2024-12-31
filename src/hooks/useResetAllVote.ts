@@ -12,15 +12,25 @@ const useResetAllVotes = () => {
   };
 
   return async (voteData: PokerUserRecord[], roomId: string) => {
-    for (const i in voteData) {
-      const userId = voteData[i].id;
-      await postResetUserVote(userId);
-    }
-
-    const data = {
+    const clearedVote = {
+      currentVote: 0,
+      isActive: false,
+    };
+    const roomData = {
       isVoting: true,
     };
-    await pb.collection("pokerRoom").update(roomId, data);
+
+    await pb.collection("pokerRoom").update(roomId, roomData);
+    await Promise.all(
+      voteData
+        .filter((item) => item.pokerRoom === roomId)
+        .map((vote) =>
+          pb
+            .collection("pokerUser")
+            .update(vote.id, clearedVote)
+            .then((item) => console.log("clear", item))
+        )
+    );
   };
 };
 
